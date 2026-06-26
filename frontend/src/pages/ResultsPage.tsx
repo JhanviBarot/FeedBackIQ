@@ -14,6 +14,10 @@ import {
   AlertCircle,
   Clock,
   Zap,
+  Activity,
+  ArrowUp,
+  ArrowDown,
+  Minus,
 } from 'lucide-react';
 import {
   PieChart,
@@ -24,12 +28,16 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
 } from 'recharts';
 import AppLayout from '../components/AppLayout';
 import api from '../api/client';
+import { getTrendContext } from '../api/dashboard';
+import type { TrendResponse } from '../api/dashboard';
 import type { DashboardResponse, ActionPlanResponse } from '../types/api';
 
 function Skeleton({ className = '', style }: { className?: string; style?: React.CSSProperties }) {
@@ -68,6 +76,9 @@ export default function ResultsPage() {
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [downloadingCsv, setDownloadingCsv] = useState(false);
 
+  const [trendData, setTrendData] = useState<TrendResponse | null>(null);
+  const [trendLoading, setTrendLoading] = useState(true);
+
   useEffect(() => {
     if (!sessionId) {
       navigate('/dashboard');
@@ -87,6 +98,14 @@ export default function ResultsPage() {
       })
       .finally(() => setLoading(false));
   }, [sessionId, navigate]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    getTrendContext(sessionId)
+      .then(setTrendData)
+      .catch(() => setTrendData({ available: false }))
+      .finally(() => setTrendLoading(false));
+  }, [sessionId]);
 
   const handleGenerateActionPlan = async () => {
     if (!sessionId) return;
@@ -504,6 +523,184 @@ export default function ResultsPage() {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Trend Analysis */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center">
+              <Activity className="w-5 h-5 text-teal-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Trend Analysis</h2>
+              <p className="text-muted text-sm">How your feedback is changing over time</p>
+            </div>
+          </div>
+
+          {trendLoading ? (
+            <Skeleton className="h-24 w-full" />
+          ) : !trendData?.available ? (
+            <div className="bg-teal-50 border border-teal-200 rounded-xl px-5 py-4">
+              <p className="text-teal-700 text-sm">
+                Trend analysis available after your second analysis. Complete another analysis to see how your feedback is changing over time.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {/* Sentiment Trajectory */}
+              {trendData.sentiment_trajectory && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Sentiment Trajectory</h3>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={trendData.sentiment_trajectory.points} margin={{ left: 0, right: 16, top: 8, bottom: 8 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="label"
+                        fontSize={11}
+                        tickFormatter={(v: string) => v.slice(0, 15)}
+                      />
+                      <YAxis domain={[0, 100]} fontSize={11} />
+                      <Tooltip formatter={(v: number) => `${v.toFixed(1)}`} />
+                      <Line
+                        type="monotone"
+                        dataKey="overall_score"
+                        stroke="#0F6E56"
+                        strokeWidth={2}
+                        dot={{ r: 5, fill: '#0F6E56' }}
+                        activeDot={{ r: 7 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                  <div className="flex items-center gap-4 mt-3">
+                    {trendData.sentiment_trajectory.trend === 'improving' && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
+                        <ArrowUp className="w-4 h-4" /> Improving
+                      </span>
+                    )}
+                    {trendData.sentiment_trajectory.trend === 'declining' && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-full text-sm font-semibold">
+                        <ArrowDown className="w-4 h-4" /> Declining
+                      </span>
+                    )}
+                    {trendData.sentiment_trajectory.trend === 'stable' && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full text-sm font-semibold">
+                        <Minus className="w-4 h-4" /> Stable
+                      </span>
+                    )}
+                    <span className="text-sm text-muted">
+                      {trendData.sentiment_trajectory.change >= 0 ? '+' : ''}
+                      {trendData.sentiment_trajectory.change.toFixed(1)} points since first analysis
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Category Drift */}
+              {trendData.category_drift && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Category Drift</h3>
+                  {trendData.category_drift.growing.length === 0 &&
+                   trendData.category_drift.shrinking.length === 0 &&
+                   trendData.category_drift.new_categories.length === 0 ? (
+                    <p className="text-muted text-sm">No significant category shifts detected.</p>
+                  ) : (
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs font-semibold text-red-600 uppercase tracking-wide mb-2">Growing Issues</p>
+                        {trendData.category_drift.growing.length === 0 ? (
+                          <p className="text-muted text-sm">None</p>
+                        ) : (
+                          <div className="space-y-1.5">
+                            {trendData.category_drift.growing.map((item) => (
+                              <div key={item.category} className="flex items-center justify-between bg-red-50 rounded-lg px-3 py-2">
+                                <span className="text-sm font-medium text-gray-800">{item.category}</span>
+                                <span className="flex items-center gap-1 text-sm text-red-600 font-semibold">
+                                  <ArrowUp className="w-3.5 h-3.5" />
+                                  +{item.change.toFixed(1)}%
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {trendData.category_drift.new_categories.map((cat) => (
+                          <span key={cat} className="inline-block mt-2 px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full mr-1">
+                            New: {cat}
+                          </span>
+                        ))}
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-green-600 uppercase tracking-wide mb-2">Improving Areas</p>
+                        {trendData.category_drift.shrinking.length === 0 ? (
+                          <p className="text-muted text-sm">None</p>
+                        ) : (
+                          <div className="space-y-1.5">
+                            {trendData.category_drift.shrinking.map((item) => (
+                              <div key={item.category} className="flex items-center justify-between bg-green-50 rounded-lg px-3 py-2">
+                                <span className="text-sm font-medium text-gray-800">{item.category}</span>
+                                <span className="flex items-center gap-1 text-sm text-green-600 font-semibold">
+                                  <ArrowDown className="w-3.5 h-3.5" />
+                                  {item.change.toFixed(1)}%
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Emerging Issues */}
+              {trendData.emerging_issues && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Emerging Issues</h3>
+                  {trendData.emerging_issues.emerging.length === 0 && trendData.emerging_issues.resolved.length === 0 ? (
+                    <p className="text-muted text-sm">No new critical issues detected since last analysis.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {trendData.emerging_issues.emerging.length > 0 && (
+                        <div className="border-2 border-red-200 rounded-xl p-4 bg-red-50">
+                          <p className="text-sm font-semibold text-red-700 mb-2 flex items-center gap-1.5">
+                            <AlertTriangle className="w-4 h-4" />
+                            New Critical Issues
+                          </p>
+                          <div className="space-y-1.5">
+                            {trendData.emerging_issues.emerging.map((iss) => (
+                              <div key={iss.category} className="flex items-center justify-between">
+                                <span className="text-sm font-medium text-gray-800">{iss.category}</span>
+                                <span className="text-sm text-red-600 font-semibold">
+                                  Critical issues up by {iss.change}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {trendData.emerging_issues.resolved.length > 0 && (
+                        <div className="border-2 border-green-200 rounded-xl p-4 bg-green-50">
+                          <p className="text-sm font-semibold text-green-700 mb-2 flex items-center gap-1.5">
+                            <CheckCircle2 className="w-4 h-4" />
+                            Resolved Issues
+                          </p>
+                          <div className="space-y-1.5">
+                            {trendData.emerging_issues.resolved.map((iss) => (
+                              <div key={iss.category} className="flex items-center justify-between">
+                                <span className="text-sm font-medium text-gray-800">{iss.category}</span>
+                                <span className="text-sm text-green-600 font-semibold">
+                                  {iss.previous_critical} critical → 0
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

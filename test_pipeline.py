@@ -1378,5 +1378,116 @@ check(
     "20e: sync classify_all_batches returns zero totals for empty batches",
 )
 
+# ════════════════════════════════════════════════════════════
+# SECTION 21 — Trend Engine Tests
+# ════════════════════════════════════════════════════════════
+print("\n--- Section 21: Trend Engine ---")
+
+from core.trend_engine import (
+    compute_sentiment_trajectory as _cst21,
+    compute_category_drift as _ccd21,
+    compute_emerging_issues as _cei21,
+    compute_trends as _ct21,
+)
+
+_mock_sessions21 = [
+    {
+        "session_id": "s1",
+        "created_at": "2026-06-01T10:00:00+00:00",
+        "label": "Analysis — 01 Jun 2026",
+        "total_reviews": 30,
+        "overall_score": 60.0,
+        "sentiment": {"positive_pct": 50.0, "negative_pct": 40.0, "neutral_pct": 10.0},
+        "categories": [
+            {"category": "Delivery", "count": 15, "pct": 50.0},
+            {"category": "Quality", "count": 10, "pct": 33.0},
+        ],
+        "urgency": {"critical_count": 3, "critical_pct": 10.0},
+        "top_issues": [{"category": "Delivery", "count": 10, "critical_count": 3}],
+        "top_category": "Delivery",
+    },
+    {
+        "session_id": "s2",
+        "created_at": "2026-06-15T10:00:00+00:00",
+        "label": "Analysis — 15 Jun 2026",
+        "total_reviews": 45,
+        "overall_score": 72.0,
+        "sentiment": {"positive_pct": 62.0, "negative_pct": 28.0, "neutral_pct": 10.0},
+        "categories": [
+            {"category": "Delivery", "count": 18, "pct": 40.0},
+            {"category": "Quality", "count": 15, "pct": 33.0},
+            {"category": "Support", "count": 12, "pct": 27.0},
+        ],
+        "urgency": {"critical_count": 1, "critical_pct": 2.2},
+        "top_issues": [{"category": "Delivery", "count": 8, "critical_count": 1}],
+        "top_category": "Delivery",
+    },
+]
+
+# 21a — improving trajectory (72 - 60 = 12 > 5)
+_traj21a = _cst21(_mock_sessions21)
+check(_traj21a["trend"] == "improving",
+      f"21a: trend == 'improving' (got '{_traj21a['trend']}')")
+check(_traj21a["change"] == 12.0,
+      f"21a: change == 12.0 (got {_traj21a['change']})")
+
+# 21b — insufficient_data with single session
+_traj21b = _cst21([_mock_sessions21[0]])
+check(_traj21b["trend"] == "insufficient_data",
+      f"21b: single session gives trend='insufficient_data' (got '{_traj21b['trend']}')")
+
+# 21c — 'Support' appears in new_categories (in s2, not in s1)
+_drift21c = _ccd21(_mock_sessions21)
+check("Support" in _drift21c["new_categories"],
+      f"21c: 'Support' in new_categories (got {_drift21c['new_categories']})")
+
+# 21d — 'Delivery' in shrinking (50% → 40%, change = -10 < -5)
+_delivery_shrinking21 = [x for x in _drift21c["shrinking"] if x["category"] == "Delivery"]
+check(len(_delivery_shrinking21) == 1,
+      f"21d: 'Delivery' in shrinking (got {[x['category'] for x in _drift21c['shrinking']]})")
+check(_delivery_shrinking21[0]["change"] == -10.0,
+      f"21d: Delivery change == -10.0 (got {_delivery_shrinking21[0]['change']})")
+
+# 21e — 'Delivery' in resolved when s2 critical_count drops to 0
+_sessions21e = [
+    _mock_sessions21[0],
+    {
+        **_mock_sessions21[1],
+        "top_issues": [{"category": "Delivery", "count": 8, "critical_count": 0}],
+    },
+]
+_emerging21e = _cei21(_sessions21e)
+_resolved_cats21 = [x["category"] for x in _emerging21e["resolved"]]
+check("Delivery" in _resolved_cats21,
+      f"21e: 'Delivery' in resolved when critical drops to 0 (got resolved={_resolved_cats21})")
+
+# 21f — available=False when user has no completed sessions
+class _EmptyUserStore21:
+    def get_user(self, user_id):
+        return {"user_id": user_id, "session_history": []}
+
+class _EmptySessionStore21:
+    def get_session(self, sid):
+        return None
+    def deserialise_dashboard(self, data):
+        return data
+
+_res21f = _ct21("no-sessions-user", _EmptyUserStore21(), _EmptySessionStore21())
+check(_res21f.get("available") is False,
+      f"21f: no sessions gives available=False (got {_res21f.get('available')})")
+check(_res21f.get("session_count", -1) == 0,
+      f"21f: session_count == 0 (got {_res21f.get('session_count')})")
+
+# 21g — compute_trends never raises even when UserStore throws
+class _RaisingUserStore21:
+    def get_user(self, user_id):
+        raise RuntimeError("DB connection failed")
+
+_res21g = _ct21("any-user", _RaisingUserStore21(), _EmptySessionStore21())
+check(_res21g.get("available") is False,
+      f"21g: exception gives available=False (got {_res21g.get('available')})")
+check("error" in _res21g,
+      f"21g: exception result has 'error' key (got keys={list(_res21g.keys())})")
+
 # ─────────────────────────────────────────────────────────────
 print(f"\n{'='*60}\nALL TESTS PASSED — zero API calls made\n{'='*60}")

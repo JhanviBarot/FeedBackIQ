@@ -1,0 +1,12 @@
+# paste this into .gitignore
+__pycache__/
+*.pyc
+.env
+venv/
+sessions/*.json
+sessions/*.lock
+users/*.json
+users/*.lock
+node_modules/
+frontend/dist/
+frontend/.env

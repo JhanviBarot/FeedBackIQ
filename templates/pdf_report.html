@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+/* ── Page setup ──────────────────────────────────────────────────── */
+@page {
+    size: A4;
+    margin-top: 2.4cm;
+    margin-bottom: 1.8cm;
+    margin-left: 1.8cm;
+    margin-right: 1.8cm;
+
+    @frame header_frame {
+        -pdf-frame-content: page_header;
+        top: 0.4cm;
+        height: 1.3cm;
+        left: 1.8cm;
+        right: 1.8cm;
+    }
+
+    @frame footer_frame {
+        -pdf-frame-content: page_footer;
+        bottom: 0.3cm;
+        height: 0.9cm;
+        left: 1.8cm;
+        right: 1.8cm;
+    }
+}
+
+/* ── CSS variables (inlined as literal values) ───────────────────── */
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 10pt;
+    color: #1A1A1A;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── Header / Footer (for @frame references) ─────────────────────── */
+#page_header {
+    border-bottom: 1.5pt solid #0F6E56;
+    padding-bottom: 3pt;
+}
+#page_header table { width: 100%; }
+#page_header td { font-size: 8pt; color: #4A4A4A; vertical-align: bottom; }
+
+#page_footer table { width: 100%; }
+#page_footer td { font-size: 7pt; color: #888888; vertical-align: top; padding-top: 2pt; }
+
+/* ── Section layout ──────────────────────────────────────────────── */
+.section { page-break-before: always; }
+
+h1 { font-size: 20pt; color: #0F6E56; margin: 0 0 4pt 0; }
+h2 { font-size: 14pt; color: #0F6E56; margin: 0 0 4pt 0; }
+h3 { font-size: 11pt; color: #1A1A1A; margin: 8pt 0 4pt 0; }
+.section-rule { border: none; border-top: 1pt solid #0F6E56; margin: 4pt 0 10pt 0; }
+
+/* ── Stat cards ──────────────────────────────────────────────────── */
+.stat-card {
+    background-color: #E8F5F1;
+    border: 1pt solid #0F6E56;
+    text-align: center;
+    padding: 10pt 6pt;
+    page-break-inside: avoid;
+}
+.stat-number { font-size: 22pt; font-weight: bold; margin-bottom: 3pt; }
+.stat-label  { font-size: 8pt; color: #4A4A4A; }
+
+/* ── Info boxes ──────────────────────────────────────────────────── */
+.info-box {
+    background-color: #E8F5F1;
+    border: 1pt solid #0F6E56;
+    padding: 10pt;
+    margin: 8pt 0;
+    page-break-inside: avoid;
+}
+.warn-box {
+    background-color: #FFF8E8;
+    border: 1pt solid #E67E22;
+    padding: 10pt;
+    margin: 8pt 0;
+    page-break-inside: avoid;
+}
+
+/* ── Charts ──────────────────────────────────────────────────────── */
+.chart-container { page-break-inside: avoid; margin: 6pt 0; }
+.chart-row { page-break-inside: avoid; }
+.chart-img { max-width: 100%; }
+
+/* ── Recommendation cards ────────────────────────────────────────── */
+.rec-card {
+    border-left: 4pt solid #0F6E56;
+    background-color: #F9FFFE;
+    padding: 8pt 10pt;
+    margin: 8pt 0;
+    page-break-inside: avoid;
+}
+.rec-title { font-size: 11pt; font-weight: bold; color: #1A1A1A; }
+.rec-rationale { font-style: italic; color: #4A4A4A; font-size: 9pt; margin: 4pt 0; }
+.rec-action { font-size: 9.5pt; margin: 4pt 0; }
+
+.badge {
+    display: inline;
+    font-size: 7pt;
+    font-weight: bold;
+    padding: 2pt 5pt;
+    margin-right: 4pt;
+    border-radius: 3pt;
+}
+.badge-high   { background-color: #C0392B; color: white; }
+.badge-medium { background-color: #E67E22; color: white; }
+.badge-low    { background-color: #27AE60; color: white; }
+.badge-teal   { background-color: #0F6E56; color: white; }
+
+/* ── Quick win box ───────────────────────────────────────────────── */
+.quick-win {
+    border: 1.5pt solid #0F6E56;
+    background-color: #E8F5F1;
+    padding: 10pt;
+    margin: 10pt 0;
+    page-break-inside: avoid;
+}
+.quick-win-title { font-size: 11pt; font-weight: bold; color: #0F6E56; }
+
+/* ── Data table ──────────────────────────────────────────────────── */
+.data-table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+.data-table th {
+    background-color: #0F6E56;
+    color: white;
+    padding: 5pt 4pt;
+    text-align: left;
+    font-size: 8pt;
+}
+.data-table td { padding: 4pt; border-bottom: 0.5pt solid #EEEEEE; }
+.data-table tr.even { background-color: #F5F5F5; }
+.sentiment-pos { color: #27AE60; font-weight: bold; }
+.sentiment-neg { color: #C0392B; font-weight: bold; }
+.sentiment-neu { color: #888888; }
+
+/* ── Issues table ────────────────────────────────────────────────── */
+.issues-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+.issues-table th {
+    background-color: #0F6E56; color: white;
+    padding: 6pt 5pt; text-align: left;
+}
+.issues-table td { padding: 5pt; border-bottom: 0.5pt solid #CCCCCC; }
+.issues-table tr.even td { background-color: #F5F5F5; }
+.critical-red { color: #C0392B; font-weight: bold; }
+
+/* ── Metric 2x2 grid (table-based) ──────────────────────────────── */
+.metric-card {
+    padding: 8pt;
+    text-align: center;
+    page-break-inside: avoid;
+}
+.metric-number { font-size: 20pt; font-weight: bold; }
+.metric-label  { font-size: 8pt; color: #4A4A4A; margin-top: 2pt; }
+
+/* ── Health banner ───────────────────────────────────────────────── */
+.health-banner {
+    padding: 12pt;
+    text-align: center;
+    margin: 8pt 0 14pt 0;
+    page-break-inside: avoid;
+}
+.health-score-num { font-size: 32pt; font-weight: bold; color: white; }
+.health-score-label { font-size: 13pt; color: white; margin-top: 2pt; }
+
+/* ── Cover page ──────────────────────────────────────────────────── */
+.cover-banner {
+    background-color: #094D3C;
+    padding: 20pt 18pt;
+    margin-bottom: 12pt;
+}
+.cover-company { font-size: 22pt; font-weight: bold; color: white; margin: 0; }
+.cover-brand   { font-size: 10pt; color: #B2D8CF; margin: 3pt 0 0 0; }
+.cover-subtitle { font-size: 13pt; color: #4A4A4A; margin: 10pt 0 4pt 0; }
+.cover-date     { font-size: 10pt; color: #888888; margin: 0 0 14pt 0; }
+.cover-rule     { border: none; border-top: 1.5pt solid #0F6E56; margin: 14pt 0; }
+.cover-footer   { font-size: 8pt; color: #888888; text-align: center; margin-top: 20pt; }
+
+/* ── Urgency stat cards ───────────────────────────────────────────── */
+.urgency-card {
+    text-align: center;
+    padding: 10pt 6pt;
+    page-break-inside: avoid;
+}
+.urgency-number { font-size: 24pt; font-weight: bold; }
+.urgency-label  { font-size: 8pt; color: #4A4A4A; margin-top: 2pt; }
+</style>
+</head>
+<body>
+
+<!-- ── Running header (used by @frame header_frame) ───────────────── -->
+<div id="page_header">
+    <table border="0" cellpadding="0" cellspacing="0">
+    <tr>
+        <td>{{ profile.company_name[:40] }}</td>
+        <td align="right">FeedbackIQ Intelligence Report</td>
+    </tr>
+    </table>
+</div>
+
+<!-- ── Running footer (used by @frame footer_frame) ───────────────── -->
+<div id="page_footer">
+    <table border="0" cellpadding="0" cellspacing="0">
+    <tr>
+        <td style="font-style: italic;">Confidential — Generated by FeedbackIQ</td>
+        <td align="right">Page <pdf:pagenumber /> of <pdf:pagecount /></td>
+    </tr>
+    </table>
+</div>
+
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 1 — COVER
+     ══════════════════════════════════════════════════════════════ -->
+<div>
+    <div class="cover-banner">
+        <p class="cover-company">{{ profile.company_name }}</p>
+        <p class="cover-brand">FeedbackIQ</p>
+    </div>
+
+    <p class="cover-subtitle">Customer Feedback Intelligence Report</p>
+    <p class="cover-date">{{ generated_date }}</p>
+    <hr class="cover-rule">
+
+    <!-- Row 1 stat cards -->
+    <table border="0" cellspacing="8" cellpadding="0" width="100%">
+    <tr>
+        <td width="33%">
+            <div class="stat-card">
+                <div class="stat-number" style="color: #0F6E56;">{{ total_reviews }}</div>
+                <div class="stat-label">Total Reviews</div>
+            </div>
+        </td>
+        <td width="33%">
+            <div class="stat-card">
+                <div class="stat-number" style="color: {{ score_colour }};">{{ overall_score }}%</div>
+                <div class="stat-label">Overall Score</div>
+            </div>
+        </td>
+        <td width="33%">
+            <div class="stat-card">
+                {% if has_action_plan %}
+                <div class="stat-number" style="color: {{ health_colour }};">{{ health_score }}</div>
+                {% else %}
+                <div class="stat-number" style="color: #888888;">—</div>
+                {% endif %}
+                <div class="stat-label">Health Score</div>
+            </div>
+        </td>
+    </tr>
+    </table>
+
+    <!-- Row 2 stat cards -->
+    <table border="0" cellspacing="8" cellpadding="0" width="100%" style="margin-top: 8pt;">
+    <tr>
+        <td width="33%">
+            <div class="stat-card">
+                <div class="stat-number" style="color: #27AE60;">{{ "%.0f"|format(positive_pct) }}%</div>
+                <div class="stat-label">Positive</div>
+            </div>
+        </td>
+        <td width="33%">
+            <div class="stat-card">
+                {% if critical_count > 0 %}
+                <div class="stat-number" style="color: #C0392B;">{{ critical_count }}</div>
+                {% else %}
+                <div class="stat-number" style="color: #27AE60;">{{ critical_count }}</div>
+                {% endif %}
+                <div class="stat-label">Critical Issues</div>
+            </div>
+        </td>
+        <td width="33%">
+            <div class="stat-card">
+                <div class="stat-number" style="color: #0F6E56; font-size: 14pt; padding-top: 4pt;">
+                    {{ top_category[:20] if top_category else "—" }}
+                </div>
+                <div class="stat-label">Top Category</div>
+            </div>
+        </td>
+    </tr>
+    </table>
+
+    <p class="cover-footer">Generated by FeedbackIQ &bull; Confidential</p>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 2 — EXECUTIVE SUMMARY
+     ══════════════════════════════════════════════════════════════ -->
+<div class="section">
+    <h1>Executive Summary</h1>
+    <hr class="section-rule">
+
+    {% if has_action_plan %}
+        <p style="font-size: 10pt; line-height: 1.5; color: #1A1A1A;">{{ executive_summary }}</p>
+
+        {% if key_strengths %}
+        <h3>Key Strengths</h3>
+        <ul style="margin: 4pt 0 10pt 16pt; padding: 0;">
+            {% for strength in key_strengths %}
+            <li style="color: #0F6E56; font-size: 9.5pt; margin-bottom: 3pt;">{{ strength }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    {% else %}
+        <div class="info-box">
+            <p style="font-size: 10pt; color: #0F6E56; font-weight: bold; margin: 0 0 6pt 0;">
+                Action Plan Not Yet Generated
+            </p>
+            <p style="font-size: 9.5pt; color: #4A4A4A; margin: 0;">
+                To generate an AI-powered executive summary and action plan,
+                click "Generate Action Plan" in the FeedbackIQ dashboard and then
+                re-download this report.
+            </p>
+        </div>
+    {% endif %}
+
+    <h3 style="margin-top: 14pt;">Key Metrics at a Glance</h3>
+    <hr style="border: none; border-top: 0.5pt solid #CCCCCC; margin: 4pt 0 10pt 0;">
+
+    <table border="0" cellspacing="8" cellpadding="0" width="100%">
+    <tr>
+        <td width="50%">
+            <div class="metric-card" style="background-color: #F0FFF5; border: 1pt solid #27AE60;">
+                <div class="metric-number" style="color: #27AE60;">
+                    {{ dashboard_data.sentiment.positive_count }}
+                    <span style="font-size: 11pt;">({{ "%.0f"|format(positive_pct) }}%)</span>
+                </div>
+                <div class="metric-label">Positive Reviews</div>
+            </div>
+        </td>
+        <td width="50%">
+            <div class="metric-card" style="background-color: #FFF5F5; border: 1pt solid #C0392B;">
+                <div class="metric-number" style="color: #C0392B;">
+                    {{ dashboard_data.sentiment.negative_count }}
+                    <span style="font-size: 11pt;">({{ "%.0f"|format(negative_pct) }}%)</span>
+                </div>
+                <div class="metric-label">Negative Reviews</div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td width="50%">
+            <div class="metric-card" style="background-color: {% if critical_count > 0 %}#FFF5F5; border: 1pt solid #C0392B;{% else %}#F0FFF5; border: 1pt solid #27AE60;{% endif %}">
+                <div class="metric-number" style="color: {% if critical_count > 0 %}#C0392B{% else %}#27AE60{% endif %};">
+                    {{ critical_count }}
+                </div>
+                <div class="metric-label">Critical Issues</div>
+            </div>
+        </td>
+        <td width="50%">
+            <div class="metric-card" style="background-color: #E8F5F1; border: 1pt solid #0F6E56;">
+                <div class="metric-number" style="color: #0F6E56; font-size: 14pt; padding-top: 4pt;">
+                    {{ top_category[:24] if top_category else "—" }}
+                </div>
+                <div class="metric-label">Top Category</div>
+            </div>
+        </td>
+    </tr>
+    </table>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 3 — ANALYTICS OVERVIEW (CHARTS)
+     ══════════════════════════════════════════════════════════════ -->
+<div class="section">
+    <h1>Analytics Overview</h1>
+    <hr class="section-rule">
+
+    <!-- Sentiment donut + Emotion bar side by side -->
+    <table border="0" cellspacing="0" cellpadding="4" width="100%" class="chart-row">
+    <tr>
+        <td width="50%" valign="top">
+            <p style="font-size: 9pt; font-weight: bold; color: #4A4A4A; margin: 0 0 4pt 0;">
+                Sentiment Distribution
+            </p>
+            <div class="chart-container">
+                {% if chart_sentiment %}
+                <img class="chart-img" src="data:image/png;base64,{{ chart_sentiment }}" />
+                {% else %}
+                <p style="color: #888; font-size: 9pt; text-align: center;">[Chart unavailable]</p>
+                {% endif %}
+            </div>
+        </td>
+        <td width="50%" valign="top">
+            <p style="font-size: 9pt; font-weight: bold; color: #4A4A4A; margin: 0 0 4pt 0;">
+                Emotion Breakdown
+            </p>
+            <div class="chart-container">
+                {% if chart_emotion %}
+                <img class="chart-img" src="data:image/png;base64,{{ chart_emotion }}" />
+                {% else %}
+                <p style="color: #888; font-size: 9pt; text-align: center;">[Chart unavailable]</p>
+                {% endif %}
+            </div>
+        </td>
+    </tr>
+    </table>
+
+    <!-- Category bar full width -->
+    <p style="font-size: 9pt; font-weight: bold; color: #4A4A4A; margin: 10pt 0 4pt 0;">
+        Reviews by Category
+    </p>
+    <div class="chart-container">
+        {% if chart_category %}
+        <img class="chart-img" src="data:image/png;base64,{{ chart_category }}" />
+        {% else %}
+        <p style="color: #888; font-size: 9pt; text-align: center;">[Chart unavailable]</p>
+        {% endif %}
+    </div>
+
+    <!-- Urgency heatmap full width -->
+    <p style="font-size: 9pt; font-weight: bold; color: #4A4A4A; margin: 10pt 0 4pt 0;">
+        Urgency by Category
+    </p>
+    <div class="chart-container">
+        {% if chart_heatmap %}
+        <img class="chart-img" src="data:image/png;base64,{{ chart_heatmap }}" />
+        {% else %}
+        <p style="color: #888; font-size: 9pt; text-align: center;">[Chart unavailable]</p>
+        {% endif %}
+    </div>
+
+    <!-- Aspect summary + explanation -->
+    <table border="0" cellspacing="0" cellpadding="8" width="100%" style="margin-top: 8pt;" class="chart-row">
+    <tr>
+        <td width="50%" valign="top">
+            <p style="font-size: 9pt; font-weight: bold; color: #4A4A4A; margin: 0 0 4pt 0;">
+                Multi-Aspect Coverage
+            </p>
+            <div class="chart-container">
+                {% if chart_aspect %}
+                <img class="chart-img" src="data:image/png;base64,{{ chart_aspect }}" />
+                {% else %}
+                <p style="color: #888; font-size: 9pt; text-align: center;">[Chart unavailable]</p>
+                {% endif %}
+            </div>
+        </td>
+        <td width="50%" valign="top" style="padding-top: 20pt;">
+            <p style="font-size: 9pt; color: #4A4A4A; line-height: 1.4;">
+                <strong>{{ multi_aspect.multi_aspect_count }}</strong> reviews
+                ({{ "%.0f"|format(multi_aspect.multi_aspect_pct) }}%) mentioned
+                more than one feedback category. These multi-aspect reviews
+                contain richer signal and may indicate compound issues or
+                broad satisfaction across multiple areas.
+            </p>
+        </td>
+    </tr>
+    </table>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 4 — URGENCY AND ISSUES
+     ══════════════════════════════════════════════════════════════ -->
+<div class="section">
+    <h1>Urgency &amp; Issue Analysis</h1>
+    <hr class="section-rule">
+
+    <!-- Urgency stat cards -->
+    <table border="0" cellspacing="8" cellpadding="0" width="100%">
+    <tr>
+        <td width="33%">
+            <div class="urgency-card" style="background-color: #FFF5F5; border: 1pt solid #C0392B;">
+                <div class="urgency-number" style="color: #C0392B;">{{ urgency.critical_count }}</div>
+                <div class="urgency-label">Critical</div>
+            </div>
+        </td>
+        <td width="33%">
+            <div class="urgency-card" style="background-color: #FFF8E8; border: 1pt solid #E67E22;">
+                <div class="urgency-number" style="color: #E67E22;">{{ urgency.medium_count }}</div>
+                <div class="urgency-label">Medium</div>
+            </div>
+        </td>
+        <td width="33%">
+            <div class="urgency-card" style="background-color: #F0FFF5; border: 1pt solid #27AE60;">
+                <div class="urgency-number" style="color: #27AE60;">{{ urgency.low_count }}</div>
+                <div class="urgency-label">Low</div>
+            </div>
+        </td>
+    </tr>
+    </table>
+
+    <h3 style="margin-top: 14pt;">Top Negative Issue Areas</h3>
+    <hr style="border: none; border-top: 0.5pt solid #CCCCCC; margin: 4pt 0 8pt 0;">
+
+    {% if top_issues %}
+    <table class="issues-table">
+    <thead>
+        <tr>
+            <th width="5%">Rank</th>
+            <th width="20%">Category</th>
+            <th width="18%">Negative Reviews</th>
+            <th width="18%">Critical Count</th>
+            <th>Example Feedback</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for issue in top_issues %}
+        <tr {% if loop.index is even %}class="even"{% endif %}>
+            <td style="text-align: center;">#{{ loop.index }}</td>
+            <td><strong>{{ issue.category }}</strong></td>
+            <td style="text-align: center;">{{ issue.count }}</td>
+            <td style="text-align: center;" {% if issue.critical_count > 0 %}class="critical-red"{% endif %}>
+                {{ issue.critical_count }}
+            </td>
+            <td style="font-size: 8pt; color: #4A4A4A; font-style: italic;">
+                "{{ issue.example[:80] }}{% if issue.example|length > 80 %}…{% endif %}"
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+    {% else %}
+    <div class="info-box">
+        <p style="margin: 0; font-size: 9.5pt; color: #0F6E56;">
+            ✓ No significant negative issue areas detected in this analysis.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 5 — ACTION PLAN
+     ══════════════════════════════════════════════════════════════ -->
+<div class="section">
+    <h1>Action Plan</h1>
+    <hr class="section-rule">
+
+    {% if not has_action_plan %}
+    <!-- No action plan generated yet -->
+    <div class="info-box">
+        <p style="font-size: 10pt; font-weight: bold; color: #0F6E56; margin: 0 0 8pt 0;">
+            Action Plan Not Generated
+        </p>
+        <p style="font-size: 9.5pt; color: #4A4A4A; margin: 0 0 6pt 0;">
+            To generate your personalised AI action plan:
+        </p>
+        <ol style="font-size: 9.5pt; color: #4A4A4A; margin: 0 0 0 14pt; padding: 0;">
+            <li style="margin-bottom: 4pt;">Return to the FeedbackIQ dashboard</li>
+            <li style="margin-bottom: 4pt;">Click <strong>"Generate Action Plan"</strong></li>
+            <li style="margin-bottom: 4pt;">Wait for AI analysis to complete (5–15 seconds)</li>
+            <li>Re-download this PDF report</li>
+        </ol>
+    </div>
+
+    {% if health_score %}
+    <div class="health-banner" style="background-color: {{ health_colour }};">
+        <div class="health-score-num">{{ health_score }}</div>
+        <div class="health-score-label">Health Score — {{ health_label }}</div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Action plan available -->
+    <div class="health-banner" style="background-color: {{ health_colour }};">
+        <div class="health-score-num">{{ health_score }}</div>
+        <div class="health-score-label">Health Score — {{ health_label }}</div>
+    </div>
+
+    {% if data_quality_note %}
+    <div class="warn-box">
+        <p style="font-size: 9pt; color: #E67E22; font-weight: bold; margin: 0 0 4pt 0;">
+            Data Quality Note
+        </p>
+        <p style="font-size: 9pt; color: #4A4A4A; margin: 0;">{{ data_quality_note }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Quick win -->
+    {% if quick_win %}
+    <div class="quick-win">
+        <p class="quick-win-title">⚡ Quick Win: {{ quick_win.title }}</p>
+        <p style="font-size: 9.5pt; color: #1A1A1A; margin: 6pt 0 4pt 0;">
+            {{ quick_win.description }}
+        </p>
+        {% if quick_win.expected_outcome %}
+        <p style="font-size: 9pt; color: #4A4A4A; font-style: italic; margin: 0;">
+            Expected outcome: {{ quick_win.expected_outcome }}
+        </p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Recommendations -->
+    {% if recommendations %}
+    <h3 style="margin-top: 14pt;">Recommendations</h3>
+    <hr style="border: none; border-top: 0.5pt solid #CCCCCC; margin: 4pt 0 8pt 0;">
+
+    {% for rec in recommendations %}
+    <div class="rec-card">
+        <p class="rec-title">#{{ rec.rank }}. {{ rec.title }}</p>
+        <p style="margin: 4pt 0;">
+            {% if rec.impact == "high" %}
+            <span class="badge badge-high">HIGH IMPACT</span>
+            {% elif rec.impact == "medium" %}
+            <span class="badge badge-medium">MEDIUM IMPACT</span>
+            {% else %}
+            <span class="badge badge-low">LOW IMPACT</span>
+            {% endif %}
+
+            {% if rec.effort == "high" %}
+            <span class="badge badge-high">HIGH EFFORT</span>
+            {% elif rec.effort == "medium" %}
+            <span class="badge badge-medium">MEDIUM EFFORT</span>
+            {% else %}
+            <span class="badge badge-low">LOW EFFORT</span>
+            {% endif %}
+
+            <span class="badge badge-teal">{{ rec.timeframe | upper }}</span>
+        </p>
+        <p class="rec-rationale">{{ rec.rationale }}</p>
+        <p class="rec-action">{{ rec.action }}</p>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% endif %}
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE 6 — DATA APPENDIX
+     ══════════════════════════════════════════════════════════════ -->
+<div class="section">
+    <h1>Data Appendix</h1>
+    <hr class="section-rule">
+    <p style="font-size: 9pt; color: #4A4A4A;">
+        Showing first {{ rows|length }} of {{ total_rows }} classified reviews.
+        {% if total_rows > 200 %}
+        Download the full CSV export for all results.
+        {% endif %}
+    </p>
+
+    <table class="data-table">
+    <thead>
+        <tr>
+            <th width="4%">#</th>
+            <th width="10%">Sentiment</th>
+            <th width="16%">Category</th>
+            <th width="10%">Urgency</th>
+            <th width="10%">Emotion</th>
+            <th>Core Issue</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr {% if loop.index is even %}class="even"{% endif %}>
+            <td>{{ row.ID }}</td>
+            <td>
+                {% if row.Sentiment == "positive" %}
+                <span class="sentiment-pos">Positive</span>
+                {% elif row.Sentiment == "negative" %}
+                <span class="sentiment-neg">Negative</span>
+                {% else %}
+                <span class="sentiment-neu">Neutral</span>
+                {% endif %}
+            </td>
+            <td>{{ row["Primary Category"] }}</td>
+            <td>{{ row.Urgency | capitalize }}</td>
+            <td>{{ row.Emotion | capitalize }}</td>
+            <td>{{ row["Core Issue"][:55] }}{% if row["Core Issue"]|string|length > 55 %}…{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+</div>
+
+</body>
+</html>

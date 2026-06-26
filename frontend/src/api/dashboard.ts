@@ -66,3 +66,28 @@ export async function getTrendContext(sessionId: string): Promise<TrendResponse>
   const { data } = await api.get<TrendResponse>(`/trends/${sessionId}/context`);
   return data;
 }
+
+export interface BenchmarkResponse {
+  available: boolean;
+  reason?: string;
+  company_count?: number;
+  industry?: string;
+  your_score?: number;
+  industry_avg_score?: number;
+  score_percentile?: number;
+  score_vs_avg?: number;
+  your_positive_pct?: number;
+  industry_avg_positive_pct?: number;
+  your_negative_pct?: number;
+  industry_avg_negative_pct?: number;
+  your_critical_pct?: number;
+  industry_avg_critical_pct?: number;
+  common_top_category?: string;
+  score_distribution?: Record<string, number>;
+  insight?: string;
+}
+
+export async function getBenchmarks(sessionId: string): Promise<BenchmarkResponse> {
+  const { data } = await api.get<BenchmarkResponse>(`/benchmarks/${sessionId}`);
+  return data;
+}

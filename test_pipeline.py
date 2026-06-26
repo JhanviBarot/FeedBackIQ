@@ -1489,5 +1489,156 @@ check(_res21g.get("available") is False,
 check("error" in _res21g,
       f"21g: exception result has 'error' key (got keys={list(_res21g.keys())})")
 
+# ════════════════════════════════════════════════════════════
+# SECTION 22 — Benchmark Engine Tests
+# ════════════════════════════════════════════════════════════
+print("\n--- Section 22: Benchmark Engine ---")
+
+import hashlib as _hashlib22
+import json as _json22
+import os as _os22
+import shutil as _shutil22
+
+from core.benchmark_engine import (
+    _get_user_hash as _guh22,
+    _load_benchmarks as _lb22,
+    _save_benchmarks as _sb22,
+    record_analysis_for_benchmarks as _rab22,
+    get_benchmarks_for_industry as _gbfi22,
+    INDUSTRY_BENCHMARK_FILE as _IBF22,
+    _DATA_DIR as _DDIR22,
+)
+
+_TEST_INDUSTRY = "TestIndustry22"
+
+_MOCK_DASHBOARD22 = {
+    "total_reviews": 50,
+    "sentiment": {
+        "overall_score": 72.0,
+        "positive_pct": 62.0,
+        "negative_pct": 28.0,
+        "neutral_pct": 10.0,
+    },
+    "urgency": {"critical_count": 3, "critical_pct": 6.0},
+    "top_category": "Delivery",
+}
+
+# 22a — _get_user_hash returns 64-char hex string
+_h22a = _guh22("test-user-id-abc")
+check(isinstance(_h22a, str) and len(_h22a) == 64,
+      f"22a: _get_user_hash returns 64-char hex (got len={len(_h22a)})")
+check(all(c in "0123456789abcdef" for c in _h22a),
+      "22a: _get_user_hash returns valid hex chars")
+
+# 22b — same input always returns same hash
+check(_guh22("test-user-id-abc") == _guh22("test-user-id-abc"),
+      "22b: _get_user_hash is deterministic")
+check(_guh22("user-a") != _guh22("user-b"),
+      "22b: different inputs produce different hashes")
+
+# 22c — _load_benchmarks returns correct empty structure when file missing
+_orig_ibf = _IBF22
+import core.benchmark_engine as _bmod22
+_saved_path = _bmod22.INDUSTRY_BENCHMARK_FILE
+_bmod22.INDUSTRY_BENCHMARK_FILE = "/nonexistent/path/x.json"
+_empty22c = _lb22()
+_bmod22.INDUSTRY_BENCHMARK_FILE = _saved_path
+check(_empty22c == {"last_updated": None, "industries": {}},
+      f"22c: _load_benchmarks returns empty structure for missing file (got {_empty22c})")
+
+# 22d — record_analysis_for_benchmarks creates industry entry
+_rab22("user-22d", _TEST_INDUSTRY, _MOCK_DASHBOARD22)
+_data22d = _lb22()
+check(_TEST_INDUSTRY in _data22d.get("industries", {}),
+      f"22d: industry '{_TEST_INDUSTRY}' created in benchmark file")
+check(_data22d["industries"][_TEST_INDUSTRY]["company_count"] == 1,
+      f"22d: company_count == 1 (got {_data22d['industries'][_TEST_INDUSTRY].get('company_count')})")
+
+# 22e — same user_id twice does not duplicate in companies list
+_rab22("user-22e", _TEST_INDUSTRY, _MOCK_DASHBOARD22)
+_rab22("user-22e", _TEST_INDUSTRY, _MOCK_DASHBOARD22)
+_data22e = _lb22()
+_companies22e = _data22e["industries"][_TEST_INDUSTRY]["companies"]
+_hash22e = _guh22("user-22e")
+check(_companies22e.count(_hash22e) == 1,
+      f"22e: same user appears exactly once in companies list (count={_companies22e.count(_hash22e)})")
+
+# 22f — get_benchmarks_for_industry returns available=False when company_count < 5
+_res22f = _gbfi22(_TEST_INDUSTRY, 72.0, 62.0, 28.0, 6.0)
+check(_res22f.get("available") is False,
+      f"22f: available=False when company_count < 5 (got {_res22f.get('available')})")
+check(_res22f.get("reason") == "insufficient_data",
+      f"22f: reason == 'insufficient_data' (got '{_res22f.get('reason')}')")
+
+# 22g — get_benchmarks_for_industry returns available=True with 5 entries
+# Build mock file with 5 test entries for a fresh industry name
+_BENCH_INDUSTRY = "BenchTestIndustry22"
+_data22g = _lb22()
+_data22g["industries"][_BENCH_INDUSTRY] = {
+    "company_count": 5,
+    "avg_overall_score": 65.0,
+    "avg_positive_pct": 55.0,
+    "avg_negative_pct": 33.0,
+    "avg_critical_pct": 8.0,
+    "common_top_category": "Quality",
+    "score_distribution": {"0-25": 0, "26-50": 1, "51-75": 3, "76-100": 1},
+    "avg_total_reviews": 60.0,
+    "companies": [_guh22(f"mock-user-{i}") for i in range(5)],
+    "_top_category_votes": {"Quality": 3, "Support": 2},
+}
+_sb22(_data22g)
+
+_res22g = _gbfi22(_BENCH_INDUSTRY, 80.0, 70.0, 22.0, 3.0)
+check(_res22g.get("available") is True,
+      f"22g: available=True with 5 companies (got {_res22g.get('available')})")
+check(_res22g.get("score_vs_avg") == round(80.0 - 65.0, 2),
+      f"22g: score_vs_avg == 15.0 (got {_res22g.get('score_vs_avg')})")
+check(_res22g.get("company_count") == 5,
+      f"22g: company_count == 5 (got {_res22g.get('company_count')})")
+
+# 22h — insight string is non-empty and contains industry name
+_insight22h = _res22g.get("insight", "")
+check(isinstance(_insight22h, str) and len(_insight22h) > 0,
+      f"22h: insight is non-empty string (got {repr(_insight22h)})")
+check(_BENCH_INDUSTRY in _insight22h,
+      f"22h: insight contains industry name (got {repr(_insight22h)})")
+
+# 22i — record_analysis_for_benchmarks never raises with invalid dashboard_data
+try:
+    _rab22("user-22i", _TEST_INDUSTRY, None)
+    _rab22("user-22i", _TEST_INDUSTRY, {})
+    _rab22("user-22i", _TEST_INDUSTRY, {"sentiment": "not-a-dict"})
+    check(True, "22i: record_analysis_for_benchmarks never raises with invalid data")
+except Exception as _e22i:
+    check(False, f"22i: raised unexpectedly: {_e22i}")
+
+# 22j — _save_benchmarks creates data/ directory if it doesn't exist
+_tmp_dir22j = _os22.path.join(_DDIR22, "_test22j_subdir")
+_bmod22._DATA_DIR = _tmp_dir22j
+_bmod22.INDUSTRY_BENCHMARK_FILE = _os22.path.join(_tmp_dir22j, "test22j.json")
+_bmod22._LOCK_FILE = _os22.path.join(_tmp_dir22j, "test22j.lock")
+try:
+    if _os22.path.exists(_tmp_dir22j):
+        _shutil22.rmtree(_tmp_dir22j)
+    _sb22({"last_updated": None, "industries": {}})
+    check(_os22.path.exists(_tmp_dir22j),
+          f"22j: _save_benchmarks created data directory at {_tmp_dir22j}")
+    check(_os22.path.exists(_bmod22.INDUSTRY_BENCHMARK_FILE),
+          "22j: _save_benchmarks created the JSON file")
+finally:
+    _bmod22._DATA_DIR = _DDIR22
+    _bmod22.INDUSTRY_BENCHMARK_FILE = _saved_path
+    _bmod22._LOCK_FILE = _os22.path.join(_DDIR22, "benchmarks.lock")
+    if _os22.path.exists(_tmp_dir22j):
+        _shutil22.rmtree(_tmp_dir22j)
+    # Clean up test industry entries from benchmark file
+    try:
+        _cleanup22 = _lb22()
+        for _ind in [_TEST_INDUSTRY, _BENCH_INDUSTRY]:
+            _cleanup22["industries"].pop(_ind, None)
+        _sb22(_cleanup22)
+    except Exception:
+        pass
+
 # ─────────────────────────────────────────────────────────────
 print(f"\n{'='*60}\nALL TESTS PASSED — zero API calls made\n{'='*60}")

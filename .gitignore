@@ -10,3 +10,4 @@ users/*.lock
 node_modules/
 frontend/dist/
 frontend/.env
+data/

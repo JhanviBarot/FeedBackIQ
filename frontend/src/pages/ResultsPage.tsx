@@ -36,8 +36,8 @@ import {
 } from 'recharts';
 import AppLayout from '../components/AppLayout';
 import api from '../api/client';
-import { getTrendContext } from '../api/dashboard';
-import type { TrendResponse } from '../api/dashboard';
+import { getTrendContext, getBenchmarks } from '../api/dashboard';
+import type { TrendResponse, BenchmarkResponse } from '../api/dashboard';
 import type { DashboardResponse, ActionPlanResponse } from '../types/api';
 
 function Skeleton({ className = '', style }: { className?: string; style?: React.CSSProperties }) {
@@ -79,6 +79,9 @@ export default function ResultsPage() {
   const [trendData, setTrendData] = useState<TrendResponse | null>(null);
   const [trendLoading, setTrendLoading] = useState(true);
 
+  const [benchmarkData, setBenchmarkData] = useState<BenchmarkResponse | null>(null);
+  const [benchmarkLoading, setBenchmarkLoading] = useState(true);
+
   useEffect(() => {
     if (!sessionId) {
       navigate('/dashboard');
@@ -105,6 +108,14 @@ export default function ResultsPage() {
       .then(setTrendData)
       .catch(() => setTrendData({ available: false }))
       .finally(() => setTrendLoading(false));
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    getBenchmarks(sessionId)
+      .then(setBenchmarkData)
+      .catch(() => setBenchmarkData({ available: false }))
+      .finally(() => setBenchmarkLoading(false));
   }, [sessionId]);
 
   const handleGenerateActionPlan = async () => {
@@ -701,6 +712,132 @@ export default function ResultsPage() {
                       )}
                     </div>
                   )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Industry Benchmarks */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-indigo-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Industry Benchmarks</h2>
+              <p className="text-muted text-sm">How you compare to other companies in your industry</p>
+            </div>
+          </div>
+
+          {benchmarkLoading ? (
+            <Skeleton className="h-24 w-full" />
+          ) : !benchmarkData?.available ? (
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-4">
+              <p className="text-gray-600 text-sm mb-1">
+                Industry benchmarks available once more FeedbackIQ users in your industry complete analyses. You are helping build this benchmark.
+              </p>
+              {(benchmarkData?.company_count ?? 0) > 0 && (
+                <p className="text-muted text-xs">
+                  {benchmarkData!.company_count} {benchmarkData!.company_count === 1 ? 'company' : 'companies'} analysed so far in your industry. Need 5 minimum.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="bg-indigo-50 rounded-xl px-4 py-3 border border-indigo-100">
+                <p className="text-sm font-semibold text-indigo-800">
+                  {benchmarkData.industry} Industry Benchmark — {benchmarkData.company_count} companies analysed
+                </p>
+              </div>
+
+              {/* Comparison Rows */}
+              <div className="space-y-3">
+                {(() => {
+                  const rows = [
+                    {
+                      label: 'Sentiment Score',
+                      yours: benchmarkData.your_score ?? 0,
+                      avg: benchmarkData.industry_avg_score ?? 0,
+                      diff: benchmarkData.score_vs_avg ?? 0,
+                      unit: '',
+                      lowerIsBetter: false,
+                    },
+                    {
+                      label: 'Positive Reviews',
+                      yours: benchmarkData.your_positive_pct ?? 0,
+                      avg: benchmarkData.industry_avg_positive_pct ?? 0,
+                      diff: (benchmarkData.your_positive_pct ?? 0) - (benchmarkData.industry_avg_positive_pct ?? 0),
+                      unit: '%',
+                      lowerIsBetter: false,
+                    },
+                    {
+                      label: 'Negative Reviews',
+                      yours: benchmarkData.your_negative_pct ?? 0,
+                      avg: benchmarkData.industry_avg_negative_pct ?? 0,
+                      diff: (benchmarkData.your_negative_pct ?? 0) - (benchmarkData.industry_avg_negative_pct ?? 0),
+                      unit: '%',
+                      lowerIsBetter: true,
+                    },
+                    {
+                      label: 'Critical Issues',
+                      yours: benchmarkData.your_critical_pct ?? 0,
+                      avg: benchmarkData.industry_avg_critical_pct ?? 0,
+                      diff: (benchmarkData.your_critical_pct ?? 0) - (benchmarkData.industry_avg_critical_pct ?? 0),
+                      unit: '%',
+                      lowerIsBetter: true,
+                    },
+                  ];
+                  return rows.map((row) => {
+                    const better = row.lowerIsBetter ? row.diff < -2 : row.diff > 2;
+                    const worse = row.lowerIsBetter ? row.diff > 2 : row.diff < -2;
+                    const badgeClass = better
+                      ? 'bg-green-100 text-green-700'
+                      : worse
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-gray-100 text-gray-600';
+                    const sign = row.diff >= 0 ? '+' : '';
+                    return (
+                      <div key={row.label} className="flex items-center gap-3 border border-gray-100 rounded-xl px-4 py-3">
+                        <span className="text-sm text-gray-600 w-36 flex-shrink-0">{row.label}</span>
+                        <span className="text-sm font-bold text-primary w-20 text-center">{row.yours.toFixed(1)}{row.unit}</span>
+                        <span className="text-xs text-muted">vs</span>
+                        <span className="text-sm text-gray-500 w-20 text-center">{row.avg.toFixed(1)}{row.unit} avg</span>
+                        <span className={`ml-auto text-xs font-semibold px-2.5 py-1 rounded-full ${badgeClass}`}>
+                          {sign}{row.diff.toFixed(1)}{row.unit}
+                        </span>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+
+              {/* Score Percentile */}
+              {benchmarkData.score_percentile !== undefined && (
+                <div className={`rounded-xl px-5 py-4 border ${
+                  benchmarkData.score_percentile >= 50
+                    ? 'bg-teal-50 border-teal-200'
+                    : 'bg-amber-50 border-amber-200'
+                }`}>
+                  <p className={`text-lg font-bold mb-0.5 ${
+                    benchmarkData.score_percentile >= 50 ? 'text-teal-700' : 'text-amber-700'
+                  }`}>
+                    Top {100 - benchmarkData.score_percentile}%
+                  </p>
+                  <p className={`text-sm ${
+                    benchmarkData.score_percentile >= 50 ? 'text-teal-600' : 'text-amber-600'
+                  }`}>
+                    You rank in the top {100 - benchmarkData.score_percentile}% of {benchmarkData.industry} companies on FeedbackIQ
+                  </p>
+                </div>
+              )}
+
+              {/* Insight */}
+              {benchmarkData.insight && (
+                <div className="bg-teal-50 border border-teal-200 rounded-xl px-5 py-4 flex items-start gap-3">
+                  <Lightbulb className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-teal-800">{benchmarkData.insight}</p>
                 </div>
               )}
             </div>

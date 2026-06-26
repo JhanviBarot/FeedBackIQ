@@ -10,6 +10,7 @@ from api.storage.users import UserStore
 from api.auth.dependencies import get_current_user_optional
 from core.preprocessing import preprocess
 from core.classifier_async import classify_all_batches_async
+from core.benchmark_engine import record_analysis_for_benchmarks
 from core.aggregator import build_dashboard_data
 from core.results import build_results_dataframe
 from core.file_input import (parse_uploaded_file, extract_review_lines,
@@ -114,6 +115,12 @@ async def _run_analysis(session_id: str, raw_text: str,
             current_user["user_id"], session_id, total_classified,
             dashboard_data["sentiment"]["overall_score"],
         )
+        try:
+            record_analysis_for_benchmarks(
+                current_user["user_id"], profile["industry"], dashboard_data
+            )
+        except Exception:
+            pass
 
     return AnalyseResponse(
         session_id=session_id,

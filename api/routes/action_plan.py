@@ -1,15 +1,18 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, Request, status
 from api.models import ActionPlanResponse
 from api.storage.sessions import SessionStore
 from api.auth.dependencies import get_current_user_optional
 from core.action_plan import generate_action_plan
+from api.middleware.rate_limiter import limiter
 
 router = APIRouter(prefix="/action-plan", tags=["Action Plan"])
 
 
 @router.post("/{session_id}", response_model=ActionPlanResponse,
              summary="Generate AI action plan for a completed session")
+@limiter.limit("10/minute")
 async def create_action_plan(
+    request: Request,
     session_id: str,
     current_user: dict = Depends(get_current_user_optional),
 ):

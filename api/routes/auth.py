@@ -1,7 +1,9 @@
 from typing import Optional, List
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field, field_validator
+
+from api.middleware.rate_limiter import limiter
 
 from api.storage.users import UserStore
 from api.auth.password import hash_password, verify_password
@@ -108,19 +110,20 @@ def _build_token_response(user: dict) -> TokenResponse:
 @router.post("/signup", response_model=TokenResponse,
              status_code=status.HTTP_201_CREATED,
              summary="Register a new user account")
-async def signup(request: SignupRequest):
+@limiter.limit("10/minute")
+async def signup(request: Request, body: SignupRequest):
     store = UserStore()
-    if store.email_exists(str(request.email)):
+    if store.email_exists(str(body.email)):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="An account with this email already exists",
         )
-    hashed = hash_password(request.password)
+    hashed = hash_password(body.password)
     try:
         user = store.create_user(
-            email=str(request.email),
+            email=str(body.email),
             hashed_password=hashed,
-            full_name=request.full_name,
+            full_name=body.full_name,
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
@@ -130,7 +133,8 @@ async def signup(request: SignupRequest):
 
 @router.post("/login", response_model=TokenResponse,
              summary="Login with email and password")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+@limiter.limit("10/minute")
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     store = UserStore()
     _DUMMY_HASH = ("$argon2id$v=19$m=65536,t=3,p=4$"
                    "dGVzdHNhbHQ$dGVzdGhhc2g")

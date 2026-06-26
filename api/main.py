@@ -1,9 +1,17 @@
+import os
 import time
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
 from api.models import HealthResponse
 from api.routes.auth import router as auth_router
 from api.routes.sessions import router as sessions_router
@@ -16,6 +24,15 @@ from api.routes.trends import router as trends_router
 from api.routes.benchmarks import router as benchmarks_router
 from api.routes.webhooks import router as webhooks_router
 
+from api.middleware.rate_limiter import limiter
+from api.middleware.error_handlers import (
+    http_exception_handler,
+    validation_exception_handler,
+    unhandled_exception_handler,
+)
+from core.config_validator import validate_config
+from core.logger import logger
+
 
 class ResponseTimeMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -24,6 +41,24 @@ class ResponseTimeMiddleware(BaseHTTPMiddleware):
         duration = time.perf_counter() - start
         response.headers["X-Response-Time"] = f"{duration:.3f}s"
         return response
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        result = validate_config()
+        logger.info(
+            "FeedbackIQ starting",
+            extra={
+                "config_status": result["status"],
+                "warnings": result["warnings"],
+            },
+        )
+    except EnvironmentError as exc:
+        logger.error(str(exc))
+        raise
+    yield
+    logger.info("FeedbackIQ shutting down")
 
 
 def create_app() -> FastAPI:
@@ -37,17 +72,30 @@ def create_app() -> FastAPI:
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
+        lifespan=lifespan,
     )
 
+    # Rate limiter state
+    app.state.limiter = limiter
+
+    # Exception handlers (order matters: most specific first)
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+    app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    app.add_exception_handler(Exception, unhandled_exception_handler)
+
+    # Middleware
+    allowed_origins = os.environ.get("ALLOWED_ORIGINS", "*").split(",")
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=allowed_origins,
         allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )
     app.add_middleware(ResponseTimeMiddleware)
 
+    # Routers
     app.include_router(auth_router)
     app.include_router(sessions_router)
     app.include_router(analyse_router)
@@ -65,9 +113,11 @@ def create_app() -> FastAPI:
             status="ok",
             version="1.0.0",
             timestamp=datetime.now(timezone.utc).isoformat(),
-            modules=["auth", "sessions", "analyse",
-                     "dashboard", "action_plan", "report", "export", "trends",
-                     "benchmarks", "webhooks"],
+            modules=[
+                "auth", "sessions", "analyse", "dashboard",
+                "action_plan", "report", "export", "trends",
+                "benchmarks", "webhooks",
+            ],
         )
 
     return app

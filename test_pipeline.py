@@ -812,7 +812,7 @@ try:
     })
     check(_bad_login.status_code == 401,
           f"18k: wrong password returns 401 (got {_bad_login.status_code})")
-    check(_bad_login.json().get("detail") == "Invalid email or password",
+    check(_bad_login.json().get("error") == "Invalid email or password",
           "18k(b): error message does not reveal which field was wrong")
 
     # 18l — GET /auth/me with valid token
@@ -1820,6 +1820,186 @@ finally:
             _shutil23.rmtree(_parent23, ignore_errors=True)
     except Exception:
         pass
+
+# ─────────────────────────────────────────────────────────────
+# SECTION 24 — Production hardening: config validator, logger, middleware, deployment files
+# ─────────────────────────────────────────────────────────────
+print("\n--- Section 24: Production Hardening ---")
+# Ensure .env is loaded so JWT_SECRET_KEY is in os.environ before validate_config
+from dotenv import load_dotenv as _load_dotenv24
+_load_dotenv24(override=False)
+import importlib as _importlib24
+import io as _io24
+import json as _json24
+import logging as _logging24
+
+_cfgmod24 = _importlib24.import_module("core.config_validator")
+_validate_config24 = _cfgmod24.validate_config
+_REQUIRED24 = _cfgmod24.REQUIRED_ENV_VARS
+_OPTIONAL24 = _cfgmod24.OPTIONAL_ENV_VARS
+
+# 24a — validate_config() passes when all required env vars are present
+_result24a = _validate_config24()
+check(_result24a["status"] == "ok",
+      "24a: validate_config() returns status='ok' when all required vars present")
+check(set(_result24a["required_vars"]) == set(_REQUIRED24.keys()),
+      "24a: validate_config() lists all required_vars in result")
+
+# 24b — validate_config() raises EnvironmentError when GROQ_API_KEY is missing
+_saved_groq24 = os.environ.pop("GROQ_API_KEY", None)
+try:
+    try:
+        _validate_config24()
+        check(False, "24b: validate_config() should raise when GROQ_API_KEY is missing")
+    except EnvironmentError as _e24b:
+        check("GROQ_API_KEY" in str(_e24b),
+              "24b: EnvironmentError message mentions GROQ_API_KEY")
+        check("cannot start" in str(_e24b).lower() or ".env" in str(_e24b),
+              "24b: EnvironmentError message includes helpful startup guidance")
+finally:
+    if _saved_groq24:
+        os.environ["GROQ_API_KEY"] = _saved_groq24
+
+# 24c — validate_config() raises EnvironmentError when JWT_SECRET_KEY is missing
+_saved_jwt24 = os.environ.pop("JWT_SECRET_KEY", None)
+try:
+    try:
+        _validate_config24()
+        check(False, "24c: validate_config() should raise when JWT_SECRET_KEY is missing")
+    except EnvironmentError as _e24c:
+        check("JWT_SECRET_KEY" in str(_e24c),
+              "24c: EnvironmentError message mentions JWT_SECRET_KEY")
+finally:
+    if _saved_jwt24:
+        os.environ["JWT_SECRET_KEY"] = _saved_jwt24
+
+# 24d — validate_config() sets default for GROQ_MODEL if absent
+_saved_gmodel24 = os.environ.pop("GROQ_MODEL", None)
+try:
+    _validate_config24()
+    check(os.environ.get("GROQ_MODEL") == "llama-3.1-8b-instant",
+          "24d: validate_config() sets GROQ_MODEL default to 'llama-3.1-8b-instant'")
+finally:
+    if _saved_gmodel24 is not None:
+        os.environ["GROQ_MODEL"] = _saved_gmodel24
+    else:
+        os.environ.pop("GROQ_MODEL", None)
+
+# 24e — logger imports cleanly and logger.info does not raise
+_logmod24 = _importlib24.import_module("core.logger")
+_logger24 = _logmod24.logger
+try:
+    _logger24.info("test 24e log message")
+    check(True, "24e: logger.info() does not raise")
+except Exception as _e24e:
+    check(False, f"24e: logger.info() raised unexpectedly: {_e24e}")
+
+# 24f — logger output is JSON-parseable
+_buf24f = _io24.StringIO()
+_h24f = _logging24.StreamHandler(_buf24f)
+from pythonjsonlogger import jsonlogger as _pjl24
+_h24f.setFormatter(_pjl24.JsonFormatter(
+    fmt="%(asctime)s %(name)s %(levelname)s %(message)s"
+))
+_logger24.addHandler(_h24f)
+_logger24.info("test 24f json output")
+_logger24.removeHandler(_h24f)
+_raw24f = _buf24f.getvalue().strip()
+check(len(_raw24f) > 0, "24f: logger produced output")
+try:
+    _parsed24f = _json24.loads(_raw24f)
+    check("message" in _parsed24f,
+          "24f: logger output is valid JSON with 'message' key")
+except Exception as _e24f:
+    check(False, f"24f: logger output is not valid JSON: {_e24f}")
+
+# 24g — http_exception_handler returns JSONResponse with 'error' key
+from starlette.exceptions import HTTPException as _StarletteHTTPException24
+from starlette.testclient import TestClient as _TestClient24
+from fastapi import FastAPI as _FastAPI24
+_errmod24 = _importlib24.import_module("api.middleware.error_handlers")
+
+_app24g = _FastAPI24()
+_app24g.add_exception_handler(
+    _StarletteHTTPException24, _errmod24.http_exception_handler
+)
+
+@_app24g.get("/test-404")
+async def _test_404_handler():
+    raise _StarletteHTTPException24(status_code=404, detail="Not found test")
+
+_client24g = _TestClient24(_app24g, raise_server_exceptions=False)
+_resp24g = _client24g.get("/test-404")
+check(_resp24g.status_code == 404,
+      "24g: http_exception_handler returns correct status code 404")
+_body24g = _resp24g.json()
+check("error" in _body24g,
+      "24g: http_exception_handler response has 'error' key")
+check(_body24g.get("status_code") == 404,
+      "24g: http_exception_handler response has 'status_code' key with value 404")
+
+# 24h — validation_exception_handler returns 422 with 'details' list
+from fastapi.exceptions import RequestValidationError as _RVE24
+from pydantic import BaseModel as _BM24, Field as _Field24
+
+_app24h = _FastAPI24()
+_app24h.add_exception_handler(_RVE24, _errmod24.validation_exception_handler)
+
+class _Body24h(_BM24):
+    name: str = _Field24(min_length=1)
+
+@_app24h.post("/test-validate")
+async def _validate_handler(body: _Body24h):
+    return body
+
+_client24h = _TestClient24(_app24h, raise_server_exceptions=False)
+_resp24h = _client24h.post("/test-validate", json={"name": ""})
+check(_resp24h.status_code == 422,
+      "24h: validation_exception_handler returns 422")
+_body24h = _resp24h.json()
+check("details" in _body24h,
+      "24h: validation_exception_handler response has 'details' key")
+check(isinstance(_body24h["details"], list),
+      "24h: validation_exception_handler 'details' is a list")
+
+# 24i — rate limiter imports cleanly
+_rlmod24 = _importlib24.import_module("api.middleware.rate_limiter")
+check(hasattr(_rlmod24, "limiter"),
+      "24i: api.middleware.rate_limiter exports 'limiter'")
+check(hasattr(_rlmod24, "RATE_LIMITS"),
+      "24i: api.middleware.rate_limiter exports 'RATE_LIMITS'")
+check(isinstance(_rlmod24.RATE_LIMITS, dict),
+      "24i: RATE_LIMITS is a dict")
+check(set(_rlmod24.RATE_LIMITS.keys()) >= {"auth", "analyse", "action_plan", "general"},
+      "24i: RATE_LIMITS has required keys: auth, analyse, action_plan, general")
+
+# 24j — Dockerfile exists and contains "FROM python:3.11-slim"
+_dockerfile24j = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Dockerfile")
+check(os.path.exists(_dockerfile24j),
+      "24j: Dockerfile exists at project root")
+with open(_dockerfile24j, "r", encoding="utf-8") as _f24j:
+    _docker_content24j = _f24j.read()
+check("FROM python:3.11-slim" in _docker_content24j,
+      "24j: Dockerfile contains 'FROM python:3.11-slim'")
+
+# 24k — .env.example exists and contains all three required key names
+_envex24k = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env.example")
+check(os.path.exists(_envex24k),
+      "24k: .env.example exists at project root")
+with open(_envex24k, "r", encoding="utf-8") as _f24k:
+    _envex_content24k = _f24k.read()
+for _key24k in ["GROQ_API_KEY", "GEMINI_API_KEY", "JWT_SECRET_KEY"]:
+    check(_key24k in _envex_content24k,
+          f"24k: .env.example contains '{_key24k}'")
+
+# 24l — render.yaml exists and contains "feedbackiq-api"
+_render24l = os.path.join(os.path.dirname(os.path.abspath(__file__)), "render.yaml")
+check(os.path.exists(_render24l),
+      "24l: render.yaml exists at project root")
+with open(_render24l, "r", encoding="utf-8") as _f24l:
+    _render_content24l = _f24l.read()
+check("feedbackiq-api" in _render_content24l,
+      "24l: render.yaml contains 'feedbackiq-api'")
 
 # ─────────────────────────────────────────────────────────────
 print(f"\n{'='*60}\nALL TESTS PASSED — zero API calls made\n{'='*60}")

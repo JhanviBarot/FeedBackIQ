@@ -1,8 +1,10 @@
 import os
 import tempfile
 from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, status
+from fastapi import APIRouter, HTTPException, Depends, Request, UploadFile, File, Form, status
 from fastapi.responses import StreamingResponse
+
+from api.middleware.rate_limiter import limiter
 
 from api.models import AnalyseResponse, PreprocessingSummary
 from api.storage.sessions import SessionStore
@@ -167,7 +169,9 @@ async def _run_analysis(session_id: str, raw_text: str,
 
 @router.post("/text", response_model=AnalyseResponse,
              summary="Analyse pasted review text")
+@limiter.limit("5/minute")
 async def analyse_text(
+    request: Request,
     session_id: str = Form(...),
     raw_text: str = Form(...),
     current_user: dict = Depends(get_current_user_optional),
@@ -182,7 +186,9 @@ async def analyse_text(
 
 @router.post("/file", response_model=AnalyseResponse,
              summary="Analyse uploaded CSV or Excel file")
+@limiter.limit("5/minute")
 async def analyse_file(
+    request: Request,
     session_id: str = Form(...),
     file: UploadFile = File(...),
     column: str = Form(default=""),

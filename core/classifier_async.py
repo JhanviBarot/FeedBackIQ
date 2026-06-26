@@ -8,6 +8,7 @@ from groq import AsyncGroq
 
 from config import GROQ_API_KEY, GROQ_MODEL, GEMINI_API_KEY, GEMINI_MODEL
 from .prompt_builder import build_prompt_pair
+from .logger import logger
 from .validator import validate_batch_response
 from .classifier import (
     call_gemini,
@@ -275,9 +276,14 @@ async def classify_all_batches_async(
     total_classified = len(all_results)
     total_failed = sum(len(b["batch_ids"]) for b in failed_batches)
 
-    print(
-        f"Async classification complete: {total_classified} reviews in {duration:.1f}s "
-        f"({len(batches)} batches, max 3 concurrent)"
+    logger.info(
+        "Async classification complete",
+        extra={
+            "total_classified": total_classified,
+            "duration_s": round(duration, 1),
+            "batches": len(batches),
+            "max_concurrent": 3,
+        },
     )
 
     return (all_results, failed_batches, total_classified, total_failed, gemini_fallback_count)

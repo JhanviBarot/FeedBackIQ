@@ -23,7 +23,7 @@ _groq_client = Groq(api_key=GROQ_API_KEY)
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
-MAX_RETRIES = 2
+MAX_RETRIES = 3
 
 
 # ─── Pydantic Models ───────────────────────────────────────────────────────────
@@ -197,30 +197,43 @@ def build_action_plan_prompts(dashboard_data: dict, profile: dict) -> dict:
             f"Treat findings from this dataset with caution."
         )
 
-    system_prompt = f"""You are a senior customer experience analyst generating a structured business intelligence report.
+    system_prompt = f"""You are a senior business analyst generating a structured JSON action plan from customer feedback statistics. You must respond with ONLY a valid JSON object — no markdown, no code fences, no explanation, no text before or after the JSON.
 
-SCOPE: You have access ONLY to the data snapshot provided below. Do not reference anything about this company that is not in the data. Do not invent benchmarks, industry averages, or competitor comparisons unless explicitly provided.
+First reason through the data in a thinking block like this:
 
-GROUNDING RULE: Every claim in executive_summary, rationale, and action fields MUST cite a specific number from the DATA SNAPSHOT. If you cannot ground a claim in the data, do not make it.
+<thinking>
+Your reasoning here about what the data shows
+</thinking>
 
-TASK: Analyse the feedback data for {company_name}, a {industry} business. Generate a structured action plan following the exact JSON schema provided.
+Then output the JSON object immediately after the closing thinking tag. The JSON must match this exact schema with no missing fields:
 
-OUTPUT FORMAT:
-1. First, write a <thinking> block where you reason through the key patterns in the data — what's working, what's failing, what's urgent, what's a quick win.
-2. Then output ONE valid JSON object matching the schema exactly. No markdown fences. No preamble after the JSON.
+{{
+  "health_score": <integer 0-100, already provided — use exact value given>,
+  "health_label": "<exact string provided>",
+  "executive_summary": "<exactly 2 sentences citing real numbers from the data>",
+  "key_strengths": ["<one sentence per strength, empty array if positive_pct < 30>"],
+  "recommendations": [
+    {{
+      "rank": <integer>,
+      "title": "<short title>",
+      "rationale": "<one sentence with a real number from the data>",
+      "action": "<2-3 concrete sentences>",
+      "impact": "<high|medium|low>",
+      "effort": "<low|medium|high>",
+      "timeframe": "<immediate|short_term|long_term>"
+    }}
+  ],
+  "quick_win": {{
+    "title": "<short title>",
+    "description": "<1-2 sentences>",
+    "expected_outcome": "<one sentence>"
+  }},
+  "data_quality_note": null
+}}
 
-JSON SCHEMA:
-{_SCHEMA_STRING}
+Rules: recommendations must have 3 to 5 items. impact must be exactly one of: high, medium, low. effort must be exactly one of: low, medium, high. timeframe must be exactly one of: immediate, short_term, long_term. health_score and health_label must use the exact values provided in the data — do not recompute them.
 
-HARD RULES:
-- JSON only after the </thinking> tag. No text before or after.
-- Use only these allowed values for impact: "high", "medium", "low"
-- Use only these allowed values for effort: "low", "medium", "high"
-- Use only these allowed values for timeframe: "immediate", "short_term", "long_term"
-- Recommendations must be ranked 1 (most impactful) to N (least impactful)
-- executive_summary must be exactly 2 sentences
-- key_strengths must be empty list [] if positive_pct < 30
-- data_quality_note must be null if low_confidence_pct <= 25"""
+Company context: {company_name} is a {industry} business."""
 
     user_prompt = f"""DATA SNAPSHOT for {company_name} ({industry}):
 
@@ -276,7 +289,7 @@ def call_groq_action_plan(system_prompt: str, user_prompt: str) -> str:
             {"role": "user", "content": user_prompt},
         ],
         temperature=0.0,
-        max_tokens=1500,
+        max_tokens=2000,
     )
     return response.choices[0].message.content
 
@@ -287,7 +300,7 @@ def call_gemini_action_plan(system_prompt: str, user_prompt: str) -> str:
         system_instruction=system_prompt,
         generation_config={
             "temperature": 0.0,
-            "max_output_tokens": 1500,
+            "max_output_tokens": 2000,
             "response_mime_type": "application/json",
         },
     )
@@ -353,10 +366,8 @@ def generate_action_plan(dashboard_data: dict, profile: dict) -> dict:
 
             if attempt > 0 and last_error:
                 correction = (
-                    f"Your previous response failed validation. "
-                    f"Reason: {last_error}. "
-                    f"Retry with valid JSON only — no thinking block, "
-                    f"no markdown fences, no preamble."
+                    f"PREVIOUS ATTEMPT FAILED. Reason: {last_error}. "
+                    f"Return ONLY valid JSON matching the schema. No markdown. No explanation."
                 )
                 current_user_prompt = f"{correction}\n\n{user_prompt}"
 

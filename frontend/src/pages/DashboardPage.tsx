@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ArrowRight, BarChart3, TrendingUp, FileText, Sparkles, Zap } from 'lucide-react';
+import { Plus, BarChart3, TrendingUp, FileText, ExternalLink } from 'lucide-react';
 import AppLayout from '../components/AppLayout';
 import { listSessions } from '../api/sessions';
 import type { SessionSummary } from '../types/api';
+
+function Skeleton({ className = '' }: { className?: string }) {
+  return <div className={`shimmer rounded-lg ${className}`} />;
+}
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const userData = localStorage.getItem('user_data');
   const user = userData ? JSON.parse(userData) : { full_name: 'User' };
+  const firstName = user.full_name?.split(' ')[0] || 'there';
 
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
@@ -20,169 +25,129 @@ export default function DashboardPage() {
       .finally(() => setSessionsLoading(false));
   }, []);
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-  const getScoreColor = (score: number) => {
-    if (score >= 75) return 'text-green-500';
-    if (score >= 50) return 'text-amber-500';
-    return 'text-red-500';
-  };
-
-  const getScoreBg = (score: number) => {
-    if (score >= 75) return 'bg-green-100';
-    if (score >= 50) return 'bg-amber-100';
-    return 'bg-red-100';
-  };
+  const scoreColor = (s: number) => (s >= 75 ? 'text-green-600' : s >= 50 ? 'text-amber-600' : 'text-red-600');
+  const scoreBg = (s: number) => (s >= 75 ? 'bg-green-100' : s >= 50 ? 'bg-amber-100' : 'bg-red-100');
 
   const totalReviews = sessions.reduce((sum, s) => sum + s.total_reviews, 0);
-  const avgScore = sessions.length
-    ? Math.round(sessions.reduce((sum, s) => sum + s.overall_score, 0) / sessions.length)
-    : 0;
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
   return (
     <AppLayout>
-      <div className="max-w-6xl mx-auto">
-        {/* Welcome Section */}
-        <div className="mb-10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-2xl gradient-bg flex items-center justify-center shadow-lg">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-muted text-sm">Welcome back</p>
-              <h1 className="text-3xl font-bold text-gray-900">Hello, {user.full_name}!</h1>
-            </div>
+      <div className="max-w-5xl mx-auto space-y-8">
+        {/* Greeting */}
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-muted text-sm mb-0.5">{greeting}</p>
+            <h1 className="text-3xl font-bold text-gray-900">{firstName} 👋</h1>
           </div>
-          <p className="text-muted text-lg ml-15">
-            Ready to transform your customer feedback into actionable insights?
-          </p>
+          <button
+            onClick={() => navigate('/analyse/profile')}
+            className="flex items-center gap-2 gradient-bg text-white font-semibold rounded-xl px-5 py-3 shadow-md hover:shadow-lg transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            New Analysis
+          </button>
         </div>
 
-        {/* New Analysis CTA */}
-        <div className="relative mb-10 overflow-hidden">
-          <div className="absolute inset-0 gradient-bg opacity-95" />
-          <div className="absolute inset-0">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
-          </div>
-          <div className="relative p-8 md:p-10 rounded-3xl">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="text-center md:text-left">
-                <div className="inline-flex items-center gap-2 bg-white/20 text-white text-sm font-medium px-3 py-1 rounded-full mb-3">
-                  <Zap className="w-3.5 h-3.5" />
-                  AI-Powered
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                  Start a New Analysis
-                </h2>
-                <p className="text-white/80 max-w-lg">
-                  Upload your customer feedback and get instant insights with AI-powered
-                  sentiment analysis and recommendations.
-                </p>
-              </div>
-              <button
-                onClick={() => navigate('/analyse/profile')}
-                className="group flex-shrink-0 flex items-center gap-3 bg-white text-primary font-bold rounded-2xl px-8 py-4 shadow-xl hover:shadow-2xl transition-all hover:scale-105"
-              >
-                <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
-                  <Plus className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-lg">New Analysis</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+        {/* Stats row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+            <div className="flex items-center gap-3 mb-1">
+              <BarChart3 className="w-5 h-5 text-teal-600" />
+              <span className="text-sm text-gray-500">Total Analyses</span>
             </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {sessionsLoading ? '…' : sessions.length}
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+            <div className="flex items-center gap-3 mb-1">
+              <FileText className="w-5 h-5 text-teal-600" />
+              <span className="text-sm text-gray-500">Reviews Processed</span>
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {sessionsLoading ? '…' : totalReviews.toLocaleString()}
+            </p>
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-          {[
-            { icon: BarChart3, label: 'Total Analyses', value: sessions.length, color: 'from-blue-500 to-cyan-400' },
-            { icon: FileText, label: 'Reviews Processed', value: totalReviews.toLocaleString(), color: 'from-purple-500 to-pink-400' },
-            { icon: TrendingUp, label: 'Avg. Score', value: sessions.length ? `${avgScore}%` : '—', color: 'from-green-500 to-emerald-400' },
-            { icon: Sparkles, label: 'Latest Score', value: sessions.length ? `${sessions[0].overall_score}%` : '—', color: 'from-orange-500 to-amber-400' },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 card-hover overflow-hidden"
-            >
-              <div className={`h-1 bg-gradient-to-r ${stat.color}`} />
-              <div className="p-5">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-md mb-4 group-hover:scale-110 transition-transform`}>
-                  <stat.icon className="w-6 h-6 text-white" />
-                </div>
-                <p className="text-muted text-sm mb-1">{stat.label}</p>
-                <p className="text-2xl font-bold text-gray-900">{sessionsLoading ? '…' : stat.value}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Recent Analyses */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-lg font-semibold text-gray-900">Recent Analyses</h2>
-            </div>
-            <button
-              onClick={() => navigate('/history')}
-              className="text-sm text-primary hover:underline font-medium flex items-center gap-1"
-            >
-              View all
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+        {/* Analyses table */}
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-gray-900">Recent Analyses</h2>
           </div>
 
           {sessionsLoading ? (
-            <div className="p-8 text-center text-muted">Loading…</div>
-          ) : sessions.length === 0 ? (
-            <div className="p-8 text-center">
-              <p className="text-muted mb-4">No analyses yet. Start your first one!</p>
-              <button
-                onClick={() => navigate('/analyse/profile')}
-                className="text-primary hover:underline font-semibold text-sm"
-              >
-                Start Analysis →
-              </button>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {sessions.slice(0, 5).map((session, index) => (
-                <div
-                  key={session.session_id}
-                  onClick={() => navigate(`/results?session=${session.session_id}`)}
-                  className="flex items-center gap-4 px-6 py-5 hover:bg-gray-50 cursor-pointer transition-all group"
-                >
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    index % 3 === 0 ? 'bg-blue-100 text-blue-600' :
-                    index % 3 === 1 ? 'bg-purple-100 text-purple-600' :
-                    'bg-green-100 text-green-600'
-                  }`}>
-                    <BarChart3 className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">{session.label}</p>
-                    <p className="text-sm text-muted">{formatDate(session.created_at)}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-600">{session.total_reviews.toLocaleString()} reviews</p>
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold mt-1 ${getScoreBg(session.overall_score)} ${getScoreColor(session.overall_score)}`}>
-                      {session.overall_score}%
-                    </span>
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+            <div className="p-6 space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-16 ml-auto" />
+                  <Skeleton className="h-7 w-14 rounded-full" />
+                  <Skeleton className="h-8 w-20 rounded-lg" />
                 </div>
               ))}
             </div>
+          ) : sessions.length === 0 ? (
+            <div className="px-6 py-16 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-600 font-medium mb-1">No analyses yet</p>
+              <p className="text-muted text-sm mb-6">Upload your first batch of feedback to get started</p>
+              <button
+                onClick={() => navigate('/analyse/profile')}
+                className="gradient-bg text-white font-semibold rounded-xl px-6 py-3"
+              >
+                Start Analysis
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Table header */}
+              <div className="grid grid-cols-[1fr_120px_100px_80px_100px] gap-4 px-6 py-3 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                <span>Company</span>
+                <span>Industry</span>
+                <span>Date</span>
+                <span className="text-right">Reviews</span>
+                <span className="text-right"></span>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {sessions.map((session) => (
+                  <div
+                    key={session.session_id}
+                    className="grid grid-cols-[1fr_120px_100px_80px_100px] gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-semibold text-gray-900 text-sm truncate">{session.label}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${scoreBg(session.overall_score)} ${scoreColor(session.overall_score)}`}>
+                          {session.overall_score.toFixed(0)}/100
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-sm text-gray-500 truncate">{(session as SessionSummary & { industry?: string }).industry || '—'}</span>
+                    <span className="text-sm text-gray-500">{formatDate(session.created_at)}</span>
+                    <span className="text-sm text-gray-700 font-medium text-right">{session.total_reviews.toLocaleString()}</span>
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => navigate(`/results?session=${session.session_id}`)}
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-teal-600 hover:text-teal-700 border border-teal-200 hover:bg-teal-50 rounded-lg px-3 py-1.5 transition-all"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        View Results
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>

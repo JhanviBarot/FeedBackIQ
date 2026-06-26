@@ -47,4 +47,5 @@ async def get_dashboard(
         dashboard_data=serialised,
         classification_done=True,
         total_classified=session.get("total_classified", 0),
+        created_at=session.get("created_at"),
     )

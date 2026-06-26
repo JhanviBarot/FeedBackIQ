@@ -52,6 +52,7 @@ class DashboardResponse(BaseModel):
     dashboard_data: dict
     classification_done: bool
     total_classified: int
+    created_at: Optional[str] = None
 
 
 class ActionPlanResponse(BaseModel):

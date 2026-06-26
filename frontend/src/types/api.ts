@@ -122,6 +122,7 @@ export interface DashboardResponse {
   dashboard_data: DashboardData;
   classification_done: boolean;
   total_classified: number;
+  created_at?: string;
 }
 
 export interface Recommendation {

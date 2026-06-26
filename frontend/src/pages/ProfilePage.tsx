@@ -1,8 +1,10 @@
-import { useState, FormEvent, KeyboardEvent } from 'react';
+import { useState, useEffect, FormEvent, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, X, Building2, Briefcase, FileText, AlertCircle, CheckCircle, Sparkles } from 'lucide-react';
 import AppLayout from '../components/AppLayout';
 import { createSession } from '../api/sessions';
+import api from '../api/client';
+import { updateProfile } from '../api/auth';
 
 const INDUSTRIES = [
   'Technology', 'Healthcare', 'Finance', 'Retail', 'Education',
@@ -16,11 +18,32 @@ export default function ProfilePage() {
   const [categoryInput, setCategoryInput] = useState('');
   const [description, setDescription] = useState('');
   const [urgencyDefinition, setUrgencyDefinition] = useState('');
-  const [saveProfile, setSaveProfile] = useState(false);
+  const [saveProfile, setSaveProfile] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadSavedProfile = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        const response = await api.get('/auth/profile');
+        if (response.data.profile) {
+          const p = response.data.profile;
+          setCompanyName(p.company_name || '');
+          setIndustry(p.industry || '');
+          setCategories(p.categories || []);
+          setDescription(p.description || '');
+          setUrgencyDefinition(p.urgency_definition || '');
+        }
+      } catch {
+        // 404 means no saved profile — show empty form
+      }
+    };
+    loadSavedProfile();
+  }, []);
 
   const handleAddCategory = () => {
     const trimmed = categoryInput.trim();
@@ -61,8 +84,18 @@ export default function ProfilePage() {
         description: description || null,
         urgency_definition: urgencyDefinition || null,
       });
-      if (saveProfile) {
-        // persist profile to backend via updateProfile if desired – skip for now
+      if (saveProfile && localStorage.getItem('access_token')) {
+        try {
+          await updateProfile({
+            company_name: companyName,
+            industry,
+            categories,
+            description: description || null,
+            urgency_definition: urgencyDefinition || null,
+          });
+        } catch {
+          // profile save failure is non-fatal — session was created successfully
+        }
       }
       navigate(`/analyse/upload?session=${session.session_id}`);
     } catch (err: unknown) {

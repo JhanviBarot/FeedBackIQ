@@ -2,10 +2,10 @@ import api from './client';
 import type { AnalyseResponse } from '../types/api';
 
 export async function analyseText(sessionId: string, rawText: string): Promise<AnalyseResponse> {
-  const params = new URLSearchParams();
-  params.append('session_id', sessionId);
-  params.append('raw_text', rawText);
-  const { data } = await api.post<AnalyseResponse>('/analyse/text', params);
+  const formData = new FormData();
+  formData.append('session_id', sessionId);
+  formData.append('raw_text', rawText);
+  const { data } = await api.post<AnalyseResponse>('/analyse/text', formData);
   return data;
 }
 

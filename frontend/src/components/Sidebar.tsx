@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { X, LayoutDashboard, PlusCircle, History, Settings, HelpCircle } from 'lucide-react';
+import { X, LayoutDashboard, PlusCircle, Settings, HelpCircle } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -12,7 +12,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/analyse/profile', label: 'New Analysis', icon: PlusCircle },
-    { path: '/history', label: 'History', icon: History },
     { path: '/account', label: 'Account', icon: Settings },
   ];
 

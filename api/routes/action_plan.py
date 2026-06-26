@@ -3,6 +3,7 @@ from api.models import ActionPlanResponse
 from api.storage.sessions import SessionStore
 from api.auth.dependencies import get_current_user_optional
 from core.action_plan import generate_action_plan
+from core.logger import logger
 from api.middleware.rate_limiter import limiter
 
 router = APIRouter(prefix="/action-plan", tags=["Action Plan"])
@@ -45,7 +46,22 @@ async def create_action_plan(
         )
 
     profile = session["profile"]
-    result = generate_action_plan(dashboard_data, profile)
+    try:
+        result = generate_action_plan(dashboard_data, profile)
+    except Exception as exc:
+        logger.error(
+            f"Action plan generation raised an exception for session {session_id}: {exc}",
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Action plan generation failed: {exc}",
+        )
+
+    if not result.get("success"):
+        logger.warning(
+            f"Action plan returned success=False for session {session_id}: {result.get('error')}",
+        )
 
     store.update_session(session_id, {"action_plan": result})
 

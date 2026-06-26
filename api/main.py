@@ -14,6 +14,7 @@ from api.routes.report import router as report_router
 from api.routes.export import router as export_router
 from api.routes.trends import router as trends_router
 from api.routes.benchmarks import router as benchmarks_router
+from api.routes.webhooks import router as webhooks_router
 
 
 class ResponseTimeMiddleware(BaseHTTPMiddleware):
@@ -56,6 +57,7 @@ def create_app() -> FastAPI:
     app.include_router(export_router)
     app.include_router(trends_router)
     app.include_router(benchmarks_router)
+    app.include_router(webhooks_router)
 
     @app.get("/health", response_model=HealthResponse, tags=["System"])
     async def health():
@@ -65,7 +67,7 @@ def create_app() -> FastAPI:
             timestamp=datetime.now(timezone.utc).isoformat(),
             modules=["auth", "sessions", "analyse",
                      "dashboard", "action_plan", "report", "export", "trends",
-                     "benchmarks"],
+                     "benchmarks", "webhooks"],
         )
 
     return app

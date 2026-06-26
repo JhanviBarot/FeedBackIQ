@@ -1641,4 +1641,185 @@ finally:
         pass
 
 # ─────────────────────────────────────────────────────────────
+# SECTION 23 — Webhook engine (zero API calls; one network attempt to localhost)
+# ─────────────────────────────────────────────────────────────
+print("\n--- Section 23: Webhook Engine ---")
+import importlib as _importlib23
+import shutil as _shutil23
+import tempfile as _tempfile23
+import uuid as _uuid23
+
+_wmod23 = _importlib23.import_module("core.webhook_engine")
+_register23 = _wmod23.register_webhook
+_get23 = _wmod23.get_webhook
+_delete23 = _wmod23.delete_webhook
+_sign23 = _wmod23._sign_payload
+_deliver_once23 = _wmod23._deliver_once
+_check23 = _wmod23.check_alert_conditions
+_dispatch23 = _wmod23.dispatch_webhooks_async
+
+_TEST_USER23 = f"test-user-wh-{_uuid23.uuid4().hex[:8]}"
+_HTTPS_URL = "https://example-feedbackiq-test.com/hook"
+_HTTP_URL = "http://insecure.example.com/hook"
+
+# Temporary webhook dir so tests don't touch real data
+_tmp_wh_dir23 = os.path.join(_tempfile23.mkdtemp(), "webhooks")
+_saved_wh_dir23 = _wmod23.WEBHOOK_DIR
+
+# Redirect storage to temp dir
+_wmod23.WEBHOOK_DIR = _tmp_wh_dir23
+
+try:
+    # 23a — register_webhook raises ValueError for http:// URL
+    try:
+        _register23(_TEST_USER23, _HTTP_URL, ["critical_spike"])
+        check(False, "23a: register_webhook should raise for http:// URL")
+    except ValueError as _e23a:
+        check("https://" in str(_e23a).lower() or "must" in str(_e23a).lower(),
+              "23a: register_webhook raises ValueError with https message for http:// URL")
+
+    # 23b — register_webhook with valid https URL creates file, returns dict with secret
+    _reg23b = _register23(_TEST_USER23, _HTTPS_URL, ["critical_spike", "sentiment_drop"])
+    check(isinstance(_reg23b, dict), "23b: register_webhook returns a dict")
+    check("secret" in _reg23b, "23b: registration result contains 'secret'")
+    check(len(_reg23b["secret"]) == 64, "23b: secret is 64-char hex (token_hex(32))")
+    check(_reg23b["url"] == _HTTPS_URL, "23b: registration result url matches input")
+    check(set(_reg23b["events"]) == {"critical_spike", "sentiment_drop"},
+          "23b: registration result events match input")
+    check(_reg23b["active"] is True, "23b: webhook registered as active")
+    check(os.path.exists(_wmod23._webhook_path(_TEST_USER23)),
+          "23b: webhook JSON file created on disk")
+
+    # 23c — get_webhook returns None for unknown user
+    _unknown23c = f"no-such-user-{_uuid23.uuid4().hex}"
+    check(_get23(_unknown23c) is None,
+          "23c: get_webhook returns None for unknown user")
+
+    # 23d — get_webhook returns correct config after registration
+    _cfg23d = _get23(_TEST_USER23)
+    check(_cfg23d is not None, "23d: get_webhook returns dict after registration")
+    check(_cfg23d["url"] == _HTTPS_URL, "23d: get_webhook url matches")
+    check(set(_cfg23d["events"]) == {"critical_spike", "sentiment_drop"},
+          "23d: get_webhook events match")
+    check(_cfg23d["active"] is True, "23d: get_webhook active is True")
+
+    # 23e — delete_webhook removes file; get_webhook returns None afterwards
+    _delete23(_TEST_USER23)
+    check(_get23(_TEST_USER23) is None,
+          "23e: get_webhook returns None after delete_webhook")
+    check(not os.path.exists(_wmod23._webhook_path(_TEST_USER23)),
+          "23e: webhook JSON file removed from disk")
+
+    # 23f — _sign_payload returns 64-char hex string
+    _payload_bytes23 = b'{"event":"test"}'
+    _secret23 = "abc123"
+    _sig23f = _sign23(_payload_bytes23, _secret23)
+    check(isinstance(_sig23f, str) and len(_sig23f) == 64,
+          "23f: _sign_payload returns 64-char hex string (SHA-256)")
+
+    # 23g — _sign_payload is deterministic (same inputs, same output)
+    _sig23g = _sign23(_payload_bytes23, _secret23)
+    check(_sig23g == _sig23f,
+          "23g: _sign_payload is deterministic with same inputs")
+
+    # 23h — _sign_payload different secret produces different signature
+    _sig23h = _sign23(_payload_bytes23, "different-secret")
+    check(_sig23h != _sig23f,
+          "23h: _sign_payload produces different result with different secret")
+
+    # 23i — check_alert_conditions triggers critical_spike when critical_pct > 20
+    _dd23_high = {
+        "urgency": {"critical_pct": 25.0, "critical_count": 10},
+        "sentiment": {"overall_score": 60.0},
+        "top_issues": [{"category": "Delivery", "count": 50}],
+    }
+    _triggered23i = _check23("sid-test", {}, _dd23_high, None)
+    _events23i = [t["event"] for t in _triggered23i]
+    check("critical_spike" in _events23i,
+          "23i: check_alert_conditions triggers critical_spike when critical_pct=25.0 > 20")
+
+    # 23j — check_alert_conditions returns empty list when critical_pct <= 20 and no previous
+    _dd23_low = {
+        "urgency": {"critical_pct": 15.0, "critical_count": 3},
+        "sentiment": {"overall_score": 75.0},
+        "top_issues": [{"category": "UI", "count": 20}],
+    }
+    _triggered23j = _check23("sid-test", {}, _dd23_low, None)
+    check(len(_triggered23j) == 0,
+          "23j: check_alert_conditions returns empty list when critical_pct=15 and no previous")
+
+    # 23k — check_alert_conditions triggers sentiment_drop when score drops > 10 points
+    _dd23_curr = {
+        "urgency": {"critical_pct": 5.0, "critical_count": 1},
+        "sentiment": {"overall_score": 55.0},
+        "top_issues": [{"category": "Support", "count": 30}],
+    }
+    _dd23_prev_k = {
+        "sentiment": {"overall_score": 70.0},
+        "top_issues": [{"category": "Support", "count": 25}],
+    }
+    _triggered23k = _check23("sid-test", {}, _dd23_curr, _dd23_prev_k)
+    _events23k = [t["event"] for t in _triggered23k]
+    check("sentiment_drop" in _events23k,
+          "23k: check_alert_conditions triggers sentiment_drop when score drops from 70 to 55")
+    _drop23k = next(t for t in _triggered23k if t["event"] == "sentiment_drop")
+    check(_drop23k["data"]["drop"] == 15.0,
+          "23k: sentiment_drop data.drop is 15.0")
+
+    # 23l — no alert when previous is None and score is low (no comparison available)
+    _triggered23l = _check23("sid-test", {}, _dd23_low, None)
+    _events23l = [t["event"] for t in _triggered23l]
+    check("sentiment_drop" not in _events23l,
+          "23l: no sentiment_drop when previous_dashboard_data is None")
+
+    # 23m — check_alert_conditions triggers new_top_issue when top category changes
+    _dd23_curr_m = {
+        "urgency": {"critical_pct": 5.0, "critical_count": 1},
+        "sentiment": {"overall_score": 68.0},
+        "top_issues": [{"category": "Billing", "count": 40}],
+    }
+    _dd23_prev_m = {
+        "sentiment": {"overall_score": 65.0},
+        "top_issues": [{"category": "Delivery", "count": 35}],
+    }
+    _triggered23m = _check23("sid-test", {}, _dd23_curr_m, _dd23_prev_m)
+    _events23m = [t["event"] for t in _triggered23m]
+    check("new_top_issue" in _events23m,
+          "23m: check_alert_conditions triggers new_top_issue when top category changes")
+    _nti23m = next(t for t in _triggered23m if t["event"] == "new_top_issue")
+    check(_nti23m["data"]["new_issue"] == "Billing",
+          "23m: new_top_issue data.new_issue is 'Billing'")
+    check(_nti23m["data"]["previous_issue"] == "Delivery",
+          "23m: new_top_issue data.previous_issue is 'Delivery'")
+
+    # 23n — dispatch_webhooks_async returns immediately when no webhook registered
+    _user23n = f"no-wh-user-{_uuid23.uuid4().hex[:8]}"
+    _result23n = _dispatch23(_user23n, "sid-test", {}, [{"event": "critical_spike", "data": {}}])
+    check(_result23n is None,
+          "23n: dispatch_webhooks_async returns None (no-op) when no webhook registered")
+
+    # 23o — _deliver_once with unreachable localhost URL returns success=False, non-empty error
+    # Note: makes a local TCP connection attempt (not to Groq/Gemini).
+    _ok23o, _code23o, _err23o = _deliver_once23(
+        "https://127.0.0.1:19999/feedbackiq-test",
+        {"event": "test"},
+        "secret123",
+    )
+    check(_ok23o is False,
+          "23o: _deliver_once returns success=False for unreachable localhost")
+    check(_err23o is not None and len(_err23o) > 0,
+          "23o: _deliver_once returns non-empty error string for unreachable localhost")
+
+finally:
+    # Restore real webhook dir
+    _wmod23.WEBHOOK_DIR = _saved_wh_dir23
+    # Clean up temp directory
+    try:
+        _parent23 = os.path.dirname(_tmp_wh_dir23)
+        if os.path.exists(_parent23):
+            _shutil23.rmtree(_parent23, ignore_errors=True)
+    except Exception:
+        pass
+
+# ─────────────────────────────────────────────────────────────
 print(f"\n{'='*60}\nALL TESTS PASSED — zero API calls made\n{'='*60}")

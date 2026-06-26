@@ -11,6 +11,7 @@ from api.auth.dependencies import get_current_user_optional
 from core.preprocessing import preprocess
 from core.classifier_async import classify_all_batches_async
 from core.benchmark_engine import record_analysis_for_benchmarks
+from core.webhook_engine import check_alert_conditions, dispatch_webhooks_async
 from core.aggregator import build_dashboard_data
 from core.results import build_results_dataframe
 from core.file_input import (parse_uploaded_file, extract_review_lines,
@@ -119,6 +120,31 @@ async def _run_analysis(session_id: str, raw_text: str,
             record_analysis_for_benchmarks(
                 current_user["user_id"], profile["industry"], dashboard_data
             )
+        except Exception:
+            pass
+
+        # 7. Webhook alert dispatch (fire-and-forget)
+        try:
+            _previous_dd = None
+            _u = UserStore().get_user(current_user["user_id"])
+            if _u:
+                _hist = _u.get("session_history", [])
+                # history[0] is current; history[1] is the previous analysis
+                if len(_hist) > 1:
+                    _prev_sid = _hist[1].get("session_id")
+                    if _prev_sid:
+                        _prev_sess = session_store.get_session(_prev_sid)
+                        if _prev_sess and _prev_sess.get("classification_done"):
+                            _ser = _prev_sess.get("dashboard_data_serialised")
+                            if _ser:
+                                _previous_dd = session_store.deserialise_dashboard(_ser)
+            _triggered = check_alert_conditions(
+                session_id, profile, dashboard_data, _previous_dd
+            )
+            if _triggered:
+                dispatch_webhooks_async(
+                    current_user["user_id"], session_id, profile, _triggered
+                )
         except Exception:
             pass
 

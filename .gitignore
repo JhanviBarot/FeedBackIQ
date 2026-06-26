@@ -11,3 +11,5 @@ node_modules/
 frontend/dist/
 frontend/.env
 data/
+data/webhooks/
+data/webhook_logs/

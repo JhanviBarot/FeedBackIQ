@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BarChart3, AlertTriangle, Sparkles } from 'lucide-react';
+import { BarChart3, Sparkles } from 'lucide-react';
+import { login } from '../api/auth';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -19,39 +20,29 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    const mockUser = {
-      full_name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
-      email,
-    };
-    localStorage.setItem('access_token', 'mock_token_' + Date.now());
-    localStorage.setItem('refresh_token', 'mock_refresh_token');
-    localStorage.setItem('user_data', JSON.stringify(mockUser));
-
-    navigate('/dashboard');
-    setLoading(false);
+    try {
+      const data = await login(email, password);
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('refresh_token', data.refresh_token);
+      localStorage.setItem('user_data', JSON.stringify({ full_name: data.full_name, email: data.email, user_id: data.user_id }));
+      navigate('/dashboard');
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: unknown } }; message?: string };
+      const detail = axiosErr?.response?.data?.detail;
+      const msg = typeof detail === 'string' ? detail : axiosErr?.message || 'Login failed. Please check your credentials.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-primary/10 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decorations */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-3xl translate-y-1/4" />
 
       <div className="w-full max-w-md relative z-10">
-        {/* Preview Banner */}
-        <div className="mb-6 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-2xl px-5 py-3.5 flex items-center gap-3 shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="w-5 h-5 text-yellow-600" />
-          </div>
-          <p className="text-yellow-800 text-sm">
-            <span className="font-semibold">Preview mode</span> — backend not connected yet
-          </p>
-        </div>
-
         <div className="bg-white rounded-3xl border border-gray-100 shadow-2xl p-8 relative overflow-hidden">
-          {/* Decorative gradient */}
           <div className="absolute top-0 left-0 right-0 h-1 gradient-bg" />
 
           <div className="flex flex-col items-center mb-8 pt-2">

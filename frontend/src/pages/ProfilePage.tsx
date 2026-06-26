@@ -2,6 +2,7 @@ import { useState, FormEvent, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, X, Building2, Briefcase, FileText, AlertCircle, CheckCircle, Sparkles } from 'lucide-react';
 import AppLayout from '../components/AppLayout';
+import { createSession } from '../api/sessions';
 
 const INDUSTRIES = [
   'Technology', 'Healthcare', 'Finance', 'Retail', 'Education',
@@ -17,6 +18,7 @@ export default function ProfilePage() {
   const [urgencyDefinition, setUrgencyDefinition] = useState('');
   const [saveProfile, setSaveProfile] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
 
@@ -50,10 +52,26 @@ export default function ProfilePage() {
     if (categories.length < 2) return;
 
     setSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const mockSessionId = 'session_' + Date.now();
-    navigate(`/analyse/upload?session=${mockSessionId}`);
+    setSubmitError(null);
+    try {
+      const session = await createSession({
+        company_name: companyName,
+        industry,
+        categories,
+        description: description || null,
+        urgency_definition: urgencyDefinition || null,
+      });
+      if (saveProfile) {
+        // persist profile to backend via updateProfile if desired – skip for now
+      }
+      navigate(`/analyse/upload?session=${session.session_id}`);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: unknown } }; message?: string };
+      const detail = axiosErr?.response?.data?.detail;
+      setSubmitError(typeof detail === 'string' ? detail : axiosErr?.message || 'Failed to create session');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -246,6 +264,12 @@ export default function ProfilePage() {
                     </div>
                   </label>
                 </div>
+
+                {submitError && (
+                  <div className="mt-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                    <p className="text-red-500 text-sm">{submitError}</p>
+                  </div>
+                )}
 
                 <div className="mt-8 flex items-center justify-between">
                   <button

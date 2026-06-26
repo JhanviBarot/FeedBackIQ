@@ -1,7 +1,8 @@
 import { useState, useRef, FormEvent, ChangeEvent, DragEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Upload, FileText, Play, ChevronDown, Check, AlertTriangle } from 'lucide-react';
+import { Upload, FileText, Play, ChevronDown, Check } from 'lucide-react';
 import AppLayout from '../components/AppLayout';
+import { analyseText, analyseFile } from '../api/analyse';
 
 export default function UploadPage() {
   const [searchParams] = useSearchParams();
@@ -12,9 +13,9 @@ export default function UploadPage() {
   const [rawText, setRawText] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [column, setColumn] = useState('review');
-  const [detectedColumns] = useState(['review', 'feedback', 'comment', 'text', 'message']);
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -46,33 +47,39 @@ export default function UploadPage() {
 
   const handleSubmitPaste = async (e: FormEvent) => {
     e.preventDefault();
-    if (!rawText.trim()) return;
+    if (!rawText.trim() || !sessionId) return;
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    navigate(`/analyse/processing?session=${sessionId || 'mock_session'}`);
+    setError(null);
+    try {
+      await analyseText(sessionId, rawText);
+      navigate(`/analyse/processing?session=${sessionId}`);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: unknown } }; message?: string };
+      const detail = axiosErr?.response?.data?.detail;
+      setError(typeof detail === 'string' ? detail : axiosErr?.message || 'Analysis failed. Please try again.');
+      setLoading(false);
+    }
   };
 
   const handleSubmitFile = async (e: FormEvent) => {
     e.preventDefault();
-    if (!file || !column) return;
+    if (!file || !column || !sessionId) return;
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    navigate(`/analyse/processing?session=${sessionId || 'mock_session'}`);
+    setError(null);
+    try {
+      await analyseFile(sessionId, file, column);
+      navigate(`/analyse/processing?session=${sessionId}`);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: unknown } }; message?: string };
+      const detail = axiosErr?.response?.data?.detail;
+      setError(typeof detail === 'string' ? detail : axiosErr?.message || 'Analysis failed. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
     <AppLayout>
       <div className="max-w-3xl mx-auto">
-        {/* Preview Banner */}
-        <div className="mb-6 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-2xl px-5 py-3.5 flex items-center gap-3 shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="w-5 h-5 text-yellow-600" />
-          </div>
-          <p className="text-yellow-800 text-sm">
-            <span className="font-semibold">Preview mode</span> — no backend connected. Uploads will be simulated.
-          </p>
-        </div>
-
         <div className="mb-8 flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl gradient-bg flex items-center justify-center shadow-lg">
             <Upload className="w-7 h-7 text-white" />
@@ -82,6 +89,12 @@ export default function UploadPage() {
             <p className="text-muted">Paste text or upload a file to begin analysis</p>
           </div>
         </div>
+
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-2xl px-5 py-3.5">
+            <p className="text-red-600 text-sm font-medium">{error}</p>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">
@@ -129,7 +142,7 @@ export default function UploadPage() {
                     className="flex items-center gap-2 gradient-bg text-white font-semibold rounded-xl px-6 py-3.5 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] disabled:opacity-50"
                   >
                     <Play className="w-4 h-4" />
-                    {loading ? 'Processing...' : 'Run Analysis'}
+                    {loading ? 'Analysing… this may take a minute' : 'Run Analysis'}
                   </button>
                 </div>
               </form>
@@ -179,18 +192,16 @@ export default function UploadPage() {
                   <div className="mt-6 bg-gray-50 rounded-xl p-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Review column</label>
                     <div className="relative">
-                      <select
+                      <input
+                        type="text"
                         value={column}
                         onChange={(e) => setColumn(e.target.value)}
-                        className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 bg-white appearance-none pr-10 transition-all"
-                      >
-                        {detectedColumns.map((col) => (
-                          <option key={col} value={col}>{col}</option>
-                        ))}
-                      </select>
+                        className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 pr-10 transition-all"
+                        placeholder="review"
+                      />
                       <ChevronDown className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
                     </div>
-                    <p className="text-xs text-muted mt-2">Select the column containing your customer reviews</p>
+                    <p className="text-xs text-muted mt-2">Enter the column name containing your customer reviews</p>
                   </div>
                 )}
 
@@ -201,7 +212,7 @@ export default function UploadPage() {
                     className="flex items-center gap-2 gradient-bg text-white font-semibold rounded-xl px-6 py-3.5 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] disabled:opacity-50"
                   >
                     <Play className="w-4 h-4" />
-                    {loading ? 'Processing...' : 'Run Analysis'}
+                    {loading ? 'Analysing… this may take a minute' : 'Run Analysis'}
                   </button>
                 </div>
               </form>

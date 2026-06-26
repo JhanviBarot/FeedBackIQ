@@ -1,17 +1,21 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart3, Clock, TrendingUp } from 'lucide-react';
 import AppLayout from '../components/AppLayout';
-
-const mockSessions = [
-  { session_id: 'session_1', label: 'TechCorp Inc.', created_at: '2024-01-15T10:30:00Z', total_reviews: 1250, overall_score: 78 },
-  { session_id: 'session_2', label: 'RetailMax', created_at: '2024-01-10T14:20:00Z', total_reviews: 3400, overall_score: 62 },
-  { session_id: 'session_3', label: 'HealthFirst', created_at: '2024-01-05T09:15:00Z', total_reviews: 890, overall_score: 85 },
-  { session_id: 'session_4', label: 'EduLearn', created_at: '2024-01-02T16:45:00Z', total_reviews: 2100, overall_score: 71 },
-  { session_id: 'session_5', label: 'FoodDelivery Co', created_at: '2023-12-28T11:20:00Z', total_reviews: 560, overall_score: 68 },
-];
+import { listSessions } from '../api/sessions';
+import type { SessionSummary } from '../types/api';
 
 export default function HistoryPage() {
   const navigate = useNavigate();
+  const [sessions, setSessions] = useState<SessionSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    listSessions()
+      .then((r) => setSessions(r.sessions))
+      .catch(() => setSessions([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -42,7 +46,11 @@ export default function HistoryPage() {
           </div>
         </div>
 
-        {mockSessions.length === 0 ? (
+        {loading ? (
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-xl p-16 text-center text-muted">
+            Loading…
+          </div>
+        ) : sessions.length === 0 ? (
           <div className="bg-white rounded-3xl border border-gray-100 shadow-xl p-16 text-center">
             <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-6">
               <BarChart3 className="w-10 h-10 text-muted" />
@@ -58,7 +66,7 @@ export default function HistoryPage() {
         ) : (
           <div className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">
             <div className="divide-y divide-gray-100">
-              {mockSessions.map((session, index) => (
+              {sessions.map((session, index) => (
                 <div
                   key={session.session_id}
                   onClick={() => navigate(`/results?session=${session.session_id}`)}

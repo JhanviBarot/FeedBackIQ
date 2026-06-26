@@ -1,36 +1,24 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ArrowRight, BarChart3, TrendingUp, FileText, AlertTriangle, Sparkles, Zap } from 'lucide-react';
+import { Plus, ArrowRight, BarChart3, TrendingUp, FileText, Sparkles, Zap } from 'lucide-react';
 import AppLayout from '../components/AppLayout';
-
-// Mock data for past analyses
-const mockSessions = [
-  {
-    session_id: 'session_1',
-    label: 'TechCorp Inc.',
-    created_at: '2024-01-15T10:30:00Z',
-    total_reviews: 1250,
-    overall_score: 78,
-  },
-  {
-    session_id: 'session_2',
-    label: 'RetailMax',
-    created_at: '2024-01-10T14:20:00Z',
-    total_reviews: 3400,
-    overall_score: 62,
-  },
-  {
-    session_id: 'session_3',
-    label: 'HealthFirst',
-    created_at: '2024-01-05T09:15:00Z',
-    total_reviews: 890,
-    overall_score: 85,
-  },
-];
+import { listSessions } from '../api/sessions';
+import type { SessionSummary } from '../types/api';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const userData = localStorage.getItem('user_data');
   const user = userData ? JSON.parse(userData) : { full_name: 'User' };
+
+  const [sessions, setSessions] = useState<SessionSummary[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+
+  useEffect(() => {
+    listSessions()
+      .then((r) => setSessions(r.sessions))
+      .catch(() => setSessions([]))
+      .finally(() => setSessionsLoading(false));
+  }, []);
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', {
@@ -52,8 +40,10 @@ export default function DashboardPage() {
     return 'bg-red-100';
   };
 
-  const totalReviews = mockSessions.reduce((sum, s) => sum + s.total_reviews, 0);
-  const avgScore = Math.round(mockSessions.reduce((sum, s) => sum + s.overall_score, 0) / mockSessions.length);
+  const totalReviews = sessions.reduce((sum, s) => sum + s.total_reviews, 0);
+  const avgScore = sessions.length
+    ? Math.round(sessions.reduce((sum, s) => sum + s.overall_score, 0) / sessions.length)
+    : 0;
 
   return (
     <AppLayout>
@@ -113,10 +103,10 @@ export default function DashboardPage() {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
           {[
-            { icon: BarChart3, label: 'Total Analyses', value: mockSessions.length, color: 'from-blue-500 to-cyan-400' },
+            { icon: BarChart3, label: 'Total Analyses', value: sessions.length, color: 'from-blue-500 to-cyan-400' },
             { icon: FileText, label: 'Reviews Processed', value: totalReviews.toLocaleString(), color: 'from-purple-500 to-pink-400' },
-            { icon: TrendingUp, label: 'Avg. Score', value: `${avgScore}%`, color: 'from-green-500 to-emerald-400' },
-            { icon: AlertTriangle, label: 'Issues Found', value: '47', color: 'from-orange-500 to-amber-400' },
+            { icon: TrendingUp, label: 'Avg. Score', value: sessions.length ? `${avgScore}%` : '—', color: 'from-green-500 to-emerald-400' },
+            { icon: Sparkles, label: 'Latest Score', value: sessions.length ? `${sessions[0].overall_score}%` : '—', color: 'from-orange-500 to-amber-400' },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -128,7 +118,7 @@ export default function DashboardPage() {
                   <stat.icon className="w-6 h-6 text-white" />
                 </div>
                 <p className="text-muted text-sm mb-1">{stat.label}</p>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                <p className="text-2xl font-bold text-gray-900">{sessionsLoading ? '…' : stat.value}</p>
               </div>
             </div>
           ))}
@@ -152,34 +142,48 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          <div className="divide-y divide-gray-100">
-            {mockSessions.map((session, index) => (
-              <div
-                key={session.session_id}
-                onClick={() => navigate(`/results?session=${session.session_id}`)}
-                className="flex items-center gap-4 px-6 py-5 hover:bg-gray-50 cursor-pointer transition-all group"
+          {sessionsLoading ? (
+            <div className="p-8 text-center text-muted">Loading…</div>
+          ) : sessions.length === 0 ? (
+            <div className="p-8 text-center">
+              <p className="text-muted mb-4">No analyses yet. Start your first one!</p>
+              <button
+                onClick={() => navigate('/analyse/profile')}
+                className="text-primary hover:underline font-semibold text-sm"
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  index === 0 ? 'bg-blue-100 text-blue-600' :
-                  index === 1 ? 'bg-purple-100 text-purple-600' :
-                  'bg-green-100 text-green-600'
-                }`}>
-                  <BarChart3 className="w-5 h-5" />
+                Start Analysis →
+              </button>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {sessions.slice(0, 5).map((session, index) => (
+                <div
+                  key={session.session_id}
+                  onClick={() => navigate(`/results?session=${session.session_id}`)}
+                  className="flex items-center gap-4 px-6 py-5 hover:bg-gray-50 cursor-pointer transition-all group"
+                >
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    index % 3 === 0 ? 'bg-blue-100 text-blue-600' :
+                    index % 3 === 1 ? 'bg-purple-100 text-purple-600' :
+                    'bg-green-100 text-green-600'
+                  }`}>
+                    <BarChart3 className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 truncate">{session.label}</p>
+                    <p className="text-sm text-muted">{formatDate(session.created_at)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-600">{session.total_reviews.toLocaleString()} reviews</p>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold mt-1 ${getScoreBg(session.overall_score)} ${getScoreColor(session.overall_score)}`}>
+                      {session.overall_score}%
+                    </span>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 truncate">{session.label}</p>
-                  <p className="text-sm text-muted">{formatDate(session.created_at)}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-600">{session.total_reviews.toLocaleString()} reviews</p>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold mt-1 ${getScoreBg(session.overall_score)} ${getScoreColor(session.overall_score)}`}>
-                    {session.overall_score}%
-                  </span>
-                </div>
-                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </AppLayout>

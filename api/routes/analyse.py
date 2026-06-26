@@ -9,7 +9,7 @@ from api.storage.sessions import SessionStore
 from api.storage.users import UserStore
 from api.auth.dependencies import get_current_user_optional
 from core.preprocessing import preprocess
-from core.classifier import classify_all_batches
+from core.classifier_async import classify_all_batches_async
 from core.aggregator import build_dashboard_data
 from core.results import build_results_dataframe
 from core.file_input import (parse_uploaded_file, extract_review_lines,
@@ -42,8 +42,8 @@ def _record_user_history(user_id: str, session_id: str,
         pass
 
 
-def _run_analysis(session_id: str, raw_text: str,
-                  current_user) -> AnalyseResponse:
+async def _run_analysis(session_id: str, raw_text: str,
+                        current_user) -> AnalyseResponse:
     session_store = SessionStore()
     session = session_store.get_session(session_id)
     if not session:
@@ -74,12 +74,13 @@ def _run_analysis(session_id: str, raw_text: str,
 
     # 2. Classification
     batches = _build_batches(reviews)
-    clf_result = classify_all_batches(batches, profile, progress_callback=None)
-    all_results = clf_result["all_results"]
-    failed_batches = clf_result["failed_batches"]
-    total_classified = clf_result["total_classified"]
-    total_failed = clf_result["total_failed"]
-    gemini_fallback_count = clf_result["gemini_fallback_count"]
+    (
+        all_results,
+        failed_batches,
+        total_classified,
+        total_failed,
+        gemini_fallback_count,
+    ) = await classify_all_batches_async(batches, profile)
 
     if total_classified == 0:
         raise HTTPException(
@@ -143,7 +144,7 @@ async def analyse_text(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="Text payload exceeds 5MB limit",
         )
-    return _run_analysis(session_id, raw_text, current_user)
+    return await _run_analysis(session_id, raw_text, current_user)
 
 
 @router.post("/file", response_model=AnalyseResponse,
@@ -211,4 +212,4 @@ async def analyse_file(
             except Exception:
                 pass
 
-    return _run_analysis(session_id, raw_text, current_user)
+    return await _run_analysis(session_id, raw_text, current_user)

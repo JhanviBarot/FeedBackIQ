@@ -938,7 +938,7 @@ from api.main import app as _app19
 from api.storage.sessions import SessionStore as _SS19, SESSIONS_DIR as _SDIR19
 from api.storage.users import UserStore as _US19, USERS_DIR as _UDIR19
 from fastapi.testclient import TestClient as _TC19
-from unittest.mock import patch as _patch19
+from unittest.mock import patch as _patch19, AsyncMock as _AsyncMock19
 
 _c19 = _TC19(_app19)
 
@@ -995,6 +995,15 @@ _MOCK_CLF = {
     "total_failed": 0,
     "gemini_fallback_count": 0,
 }
+
+# Tuple form matching the async function's return signature
+_MOCK_CLF_ASYNC = (
+    _MOCK_CLF["all_results"],
+    _MOCK_CLF["failed_batches"],
+    _MOCK_CLF["total_classified"],
+    _MOCK_CLF["total_failed"],
+    _MOCK_CLF["gemini_fallback_count"],
+)
 
 _RAW_TEXT_19 = (
     "Fast delivery, loved it\n"
@@ -1055,8 +1064,8 @@ try:
           f"19d: similar categories returns 422 (got {_r.status_code})")
 
     # 19e — POST /analyse/text with mock classification → 200
-    with _patch19("api.routes.analyse.classify_all_batches",
-                  return_value=_MOCK_CLF):
+    with _patch19("api.routes.analyse.classify_all_batches_async",
+                  new=_AsyncMock19(return_value=_MOCK_CLF_ASYNC)):
         _r = _c19.post("/analyse/text",
                         data={"session_id": _session_id_19,
                               "raw_text": _RAW_TEXT_19},
@@ -1086,8 +1095,8 @@ try:
           "19f: dashboard_data contains sentiment key")
 
     # 19g — GET /dashboard before analysis → 425
-    with _patch19("api.routes.analyse.classify_all_batches",
-                  return_value=_MOCK_CLF):
+    with _patch19("api.routes.analyse.classify_all_batches_async",
+                  new=_AsyncMock19(return_value=_MOCK_CLF_ASYNC)):
         _r_new = _c19.post("/sessions", json={
             "company_name": "PreAnalysis",
             "industry": "SaaS",
@@ -1190,8 +1199,8 @@ try:
           f"19q: user B accessing user A session returns 403 (got {_r.status_code})")
 
     # 19r — Anonymous session accessible by anyone (no ownership restriction)
-    with _patch19("api.routes.analyse.classify_all_batches",
-                  return_value=_MOCK_CLF):
+    with _patch19("api.routes.analyse.classify_all_batches_async",
+                  new=_AsyncMock19(return_value=_MOCK_CLF_ASYNC)):
         _r = _c19.post("/analyse/text",
                         data={"session_id": _anon_session_id_19,
                               "raw_text": _RAW_TEXT_19})
@@ -1209,8 +1218,8 @@ try:
         "description": "", "urgency_definition": "",
     }, headers=_auth19b)
     _b_session_id = _r_bs.json()["session_id"]
-    with _patch19("api.routes.analyse.classify_all_batches",
-                  return_value=_MOCK_CLF):
+    with _patch19("api.routes.analyse.classify_all_batches_async",
+                  new=_AsyncMock19(return_value=_MOCK_CLF_ASYNC)):
         _r = _c19.post("/analyse/text",
                         data={"session_id": _b_session_id,
                               "raw_text": _RAW_TEXT_19},
@@ -1260,6 +1269,114 @@ finally:
                     _os19.remove(_sp19)
                 except Exception:
                     pass
+
+# ════════════════════════════════════════════════════════════
+# SECTION 20 — Async Classifier Tests
+# ════════════════════════════════════════════════════════════
+print("\n--- Section 20: Async Classifier ---")
+
+import asyncio as _asyncio20
+import inspect as _inspect20
+from unittest.mock import patch as _patch20, AsyncMock as _AsyncMock20
+
+# 20a — classify_all_batches_async is importable and callable
+from core.classifier_async import classify_all_batches_async as _clf_async20
+
+check(callable(_clf_async20),
+      "20a: classify_all_batches_async importable from core.classifier_async")
+check(_asyncio20.iscoroutinefunction(_clf_async20),
+      "20a: classify_all_batches_async is a coroutine function")
+
+# 20b — empty batches returns ([], [], 0, 0, 0) without error
+_profile20 = {
+    "company_name": "TestCo", "industry": "SaaS",
+    "categories": ["Quality", "Support"],
+    "description": "", "urgency_definition": "",
+}
+_res20b = _asyncio20.run(_clf_async20([], _profile20, None))
+_ar20b, _fb20b, _tc20b, _tf20b, _gf20b = _res20b
+check(
+    _ar20b == [] and _fb20b == [] and _tc20b == 0 and _tf20b == 0 and _gf20b == 0,
+    "20b: empty batches returns ([], [], 0, 0, 0)",
+)
+
+# 20c — single batch of 5 mock reviews classifies correctly (no real API calls)
+_batch20c = [{"id": i, "text": f"Review number {i}"} for i in range(5)]
+_batches20c = [_batch20c]
+
+_mock_batch_result20c = {
+    "success": True,
+    "results": [
+        {
+            "id": i,
+            "sentiment": "positive",
+            "primary_category": "Quality",
+            "secondary_category": None,
+            "aspects": [{"category": "Quality", "sentiment": "positive"}],
+            "urgency": "low",
+            "emotion": "happy",
+            "core_issue": f"Good product {i}",
+            "confidence": "high",
+        }
+        for i in range(5)
+    ],
+    "batch_ids": list(range(5)),
+    "error": None,
+    "provider": "groq",
+}
+
+with _patch20(
+    "core.classifier_async.classify_batch_async",
+    new=_AsyncMock20(return_value=_mock_batch_result20c),
+):
+    _res20c = _asyncio20.run(_clf_async20(_batches20c, _profile20))
+
+_ar20c, _fb20c, _tc20c, _tf20c, _gf20c = _res20c
+check(
+    _tc20c == 5,
+    f"20c: 5 reviews classified correctly via async pipeline (got {_tc20c})",
+)
+check(
+    len(_ar20c) == 5,
+    f"20c: all_results contains 5 entries (got {len(_ar20c)})",
+)
+check(
+    _fb20c == [] and _tf20c == 0,
+    "20c: no failed batches when mock succeeds",
+)
+
+# 20d — semaphore is created with value 3 inside classify_all_batches_async
+_src20d = _inspect20.getsource(_clf_async20)
+check(
+    "Semaphore(3)" in _src20d,
+    "20d: asyncio.Semaphore(3) is hardcoded in classify_all_batches_async",
+)
+
+# 20e — sync classify_all_batches still works (regression: section 13 equivalent)
+from core.classifier import classify_all_batches as _clf_sync20
+from core.classifier import build_progress_summary as _bps20
+
+_ps20e = _bps20(
+    results_so_far=[
+        {"id": 0, "sentiment": "positive", "urgency": "low"},
+        {"id": 1, "sentiment": "negative", "urgency": "critical"},
+    ],
+    total_batches=5,
+    completed_batches=2,
+    failed_count=0,
+)
+check(_ps20e["classified_so_far"] == 2, "20e: sync build_progress_summary classified_so_far == 2")
+check(_ps20e["pct_complete"] == 40, "20e: sync build_progress_summary pct_complete == 40 (2/5)")
+check(
+    _ps20e["positive_so_far"] == 1 and _ps20e["negative_so_far"] == 1,
+    "20e: sync build_progress_summary counts positive and negative correctly",
+)
+
+_sync_empty = _clf_sync20([], {"categories": ["Quality"], "company_name": "X", "industry": "Y"})
+check(
+    _sync_empty["total_classified"] == 0 and _sync_empty["all_results"] == [],
+    "20e: sync classify_all_batches returns zero totals for empty batches",
+)
 
 # ─────────────────────────────────────────────────────────────
 print(f"\n{'='*60}\nALL TESTS PASSED — zero API calls made\n{'='*60}")

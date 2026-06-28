@@ -93,8 +93,9 @@ h3 { font-size: 11pt; color: #1A1A1A; margin: 8pt 0 4pt 0; }
     border-left: 4pt solid #0F6E56;
     background-color: #F9FFFE;
     padding: 8pt 10pt;
-    margin: 8pt 0;
+    margin: 0 0 16px 0;
     page-break-inside: avoid;
+    break-inside: avoid;
 }
 .rec-title { font-size: 11pt; font-weight: bold; color: #1A1A1A; }
 .rec-rationale { font-style: italic; color: #4A4A4A; font-size: 9pt; margin: 4pt 0; }
@@ -238,8 +239,8 @@ h3 { font-size: 11pt; color: #1A1A1A; margin: 8pt 0 4pt 0; }
         </td>
         <td width="33%">
             <div class="stat-card">
-                <div class="stat-number" style="color: {{ score_colour }};">{{ overall_score }}%</div>
-                <div class="stat-label">Overall Score</div>
+                <div class="stat-number" style="color: {{ score_colour }};">{{ overall_score }}</div>
+                <div class="stat-label">Sentiment Score</div>
             </div>
         </td>
         <td width="33%">
@@ -428,7 +429,8 @@ h3 { font-size: 11pt; color: #1A1A1A; margin: 8pt 0 4pt 0; }
     </div>
 
     <!-- Aspect summary + explanation -->
-    <table border="0" cellspacing="0" cellpadding="8" width="100%" style="margin-top: 8pt;" class="chart-row">
+    <table border="0" cellspacing="0" cellpadding="8" width="100%"
+           style="margin-top: 8pt; break-inside: avoid; page-break-inside: avoid;" class="chart-row">
     <tr>
         <td width="50%" valign="top">
             <p style="font-size: 9pt; font-weight: bold; color: #4A4A4A; margin: 0 0 4pt 0;">
@@ -436,7 +438,8 @@ h3 { font-size: 11pt; color: #1A1A1A; margin: 8pt 0 4pt 0; }
             </p>
             <div class="chart-container">
                 {% if chart_aspect %}
-                <img class="chart-img" src="data:image/png;base64,{{ chart_aspect }}" />
+                <img class="chart-img" src="data:image/png;base64,{{ chart_aspect }}"
+                     style="max-height: 180px;" />
                 {% else %}
                 <p style="color: #888; font-size: 9pt; text-align: center;">[Chart unavailable]</p>
                 {% endif %}
@@ -574,21 +577,6 @@ h3 { font-size: 11pt; color: #1A1A1A; margin: 8pt 0 4pt 0; }
     </div>
     {% endif %}
 
-    <!-- Quick win -->
-    {% if quick_win %}
-    <div class="quick-win">
-        <p class="quick-win-title">⚡ Quick Win: {{ quick_win.title }}</p>
-        <p style="font-size: 9.5pt; color: #1A1A1A; margin: 6pt 0 4pt 0;">
-            {{ quick_win.description }}
-        </p>
-        {% if quick_win.expected_outcome %}
-        <p style="font-size: 9pt; color: #4A4A4A; font-style: italic; margin: 0;">
-            Expected outcome: {{ quick_win.expected_outcome }}
-        </p>
-        {% endif %}
-    </div>
-    {% endif %}
-
     <!-- Recommendations -->
     {% if recommendations %}
     <h3 style="margin-top: 14pt;">Recommendations</h3>
@@ -622,6 +610,21 @@ h3 { font-size: 11pt; color: #1A1A1A; margin: 8pt 0 4pt 0; }
     {% endfor %}
     {% endif %}
 
+    <!-- Quick win (appears after all recommendations) -->
+    {% if quick_win %}
+    <div class="quick-win">
+        <p class="quick-win-title">⚡ Quick Win: {{ quick_win.title }}</p>
+        <p style="font-size: 9.5pt; color: #1A1A1A; margin: 6pt 0 4pt 0;">
+            {{ quick_win.description }}
+        </p>
+        {% if quick_win.expected_outcome %}
+        <p style="font-size: 9pt; color: #4A4A4A; font-style: italic; margin: 0;">
+            Expected outcome: {{ quick_win.expected_outcome }}
+        </p>
+        {% endif %}
+    </div>
+    {% endif %}
+
     {% endif %}
 </div>
 
@@ -653,7 +656,7 @@ h3 { font-size: 11pt; color: #1A1A1A; margin: 8pt 0 4pt 0; }
     <tbody>
         {% for row in rows %}
         <tr {% if loop.index is even %}class="even"{% endif %}>
-            <td>{{ row.ID }}</td>
+            <td>{{ loop.index }}</td>
             <td>
                 {% if row.Sentiment == "positive" %}
                 <span class="sentiment-pos">Positive</span>

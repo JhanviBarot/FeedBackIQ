@@ -7,8 +7,15 @@ import api from '../api/client';
 import { updateProfile } from '../api/auth';
 
 const INDUSTRIES = [
-  'Technology', 'Healthcare', 'Finance', 'Retail', 'Education',
-  'Manufacturing', 'Hospitality', 'Transportation', 'Real Estate', 'Other',
+  { value: 'E-commerce',  label: 'E-commerce' },
+  { value: 'SaaS',        label: 'SaaS / Software' },
+  { value: 'Retail',      label: 'Retail' },
+  { value: 'Hospitality', label: 'Hospitality & Restaurants' },
+  { value: 'Healthcare',  label: 'Healthcare' },
+  { value: 'Logistics',   label: 'Logistics & Delivery' },
+  { value: 'Finance',     label: 'Finance & Banking' },
+  { value: 'Education',   label: 'Education' },
+  { value: 'Other',       label: 'Other' },
 ];
 
 export default function ProfilePage() {
@@ -177,7 +184,7 @@ export default function ProfilePage() {
                   >
                     <option value="">Select an industry</option>
                     {INDUSTRIES.map((ind) => (
-                      <option key={ind} value={ind}>{ind}</option>
+                      <option key={ind.value} value={ind.value}>{ind.label}</option>
                     ))}
                   </select>
                 </div>

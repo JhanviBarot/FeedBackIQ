@@ -69,7 +69,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <p className="text-xs text-muted mb-3">
                 Check our documentation or contact support.
               </p>
-              <button className="w-full text-sm text-primary font-medium hover:underline">
+              <button
+                onClick={() => window.open('http://localhost:8000/api-docs', '_blank')}
+                className="w-full text-sm text-primary font-medium hover:underline"
+              >
                 View Docs
               </button>
             </div>

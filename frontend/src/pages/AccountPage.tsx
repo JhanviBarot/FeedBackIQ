@@ -12,8 +12,15 @@ import type { UserMeResponse, SessionSummary } from '../types/api';
 import type { WebhookConfig, TestWebhookResult } from '../api/webhooks';
 
 const INDUSTRIES = [
-  'Technology', 'Healthcare', 'Finance', 'Retail', 'Education',
-  'Manufacturing', 'Hospitality', 'Transportation', 'Real Estate', 'Other',
+  { value: 'E-commerce',  label: 'E-commerce' },
+  { value: 'SaaS',        label: 'SaaS / Software' },
+  { value: 'Retail',      label: 'Retail' },
+  { value: 'Hospitality', label: 'Hospitality & Restaurants' },
+  { value: 'Healthcare',  label: 'Healthcare' },
+  { value: 'Logistics',   label: 'Logistics & Delivery' },
+  { value: 'Finance',     label: 'Finance & Banking' },
+  { value: 'Education',   label: 'Education' },
+  { value: 'Other',       label: 'Other' },
 ];
 
 const EVENT_OPTIONS = [
@@ -44,7 +51,7 @@ export default function AccountPage() {
 
   // ── Profile form ───────────────────────────────────────────────────────────
   const [companyName, setCompanyName] = useState('');
-  const [industry, setIndustry] = useState('Technology');
+  const [industry, setIndustry] = useState('E-commerce');
   const [categories, setCategories] = useState<string[]>([]);
   const [categoryInput, setCategoryInput] = useState('');
   const [description, setDescription] = useState('');
@@ -79,7 +86,7 @@ export default function AccountPage() {
         setMeData(data);
         if (data.profile) {
           setCompanyName(data.profile.company_name || '');
-          setIndustry(data.profile.industry || 'Technology');
+          setIndustry(data.profile.industry || 'E-commerce');
           setCategories(data.profile.categories || []);
           setDescription(data.profile.description || '');
         }
@@ -318,7 +325,7 @@ export default function AccountPage() {
                 </label>
                 <select value={industry} onChange={(e) => setIndustry(e.target.value)}
                   className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 bg-white transition-all">
-                  {INDUSTRIES.map((ind) => <option key={ind} value={ind}>{ind}</option>)}
+                  {INDUSTRIES.map((ind) => <option key={ind.value} value={ind.value}>{ind.label}</option>)}
                 </select>
               </div>
               <div>

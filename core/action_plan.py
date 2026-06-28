@@ -23,7 +23,7 @@ _groq_client = Groq(api_key=GROQ_API_KEY)
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
-MAX_RETRIES = 3
+MAX_RETRIES = 4
 
 
 # ─── Pydantic Models ───────────────────────────────────────────────────────────
@@ -54,29 +54,18 @@ class ActionPlanResult(BaseModel):
     data_quality_note: Optional[str]
 
 
-_SCHEMA_STRING = """{
-  "health_score": <integer 0-100, pre-computed — copy from DATA SNAPSHOT exactly>,
-  "health_label": <"Strong" | "Mixed" | "Needs Attention" | "Critical", pre-computed — copy from DATA SNAPSHOT exactly>,
-  "executive_summary": <string, exactly 2 sentences, must cite at least 2 numbers from the data>,
-  "key_strengths": [<string, one sentence each citing a specific number> ...],
-  "recommendations": [
-    {
-      "rank": <integer starting at 1>,
-      "title": <string, short action-oriented title>,
-      "rationale": <string, one sentence citing a specific number from the data>,
-      "action": <string, 2-3 concrete sentences on what to do>,
-      "impact": <"high" | "medium" | "low">,
-      "effort": <"low" | "medium" | "high">,
-      "timeframe": <"immediate" | "short_term" | "long_term">
-    }
-  ],
-  "quick_win": {
-    "title": <string, short title>,
-    "description": <string, 1-2 sentences, must be genuinely actionable this week>,
-    "expected_outcome": <string, one sentence on expected improvement>
-  },
-  "data_quality_note": <string or null — null if low_confidence_pct <= 25>
-}"""
+# ─── Generic-phrase detector (used in validation) ─────────────────────────────
+
+GENERIC_PHRASES = [
+    "optimization project",
+    "streamline",
+    "leverage",
+    "synergies",
+    "best practices",
+    "going forward",
+    "at the end of the day",
+    "moving forward",
+]
 
 
 # ─── Health score computation (Python only — never delegate to LLM) ───────────
@@ -121,9 +110,17 @@ def _format_top_issues_block(top_issues: list) -> str:
     lines = []
     for i, issue in enumerate(top_issues, 1):
         example = issue.get("example", "")
+        priority = (
+            "URGENT — act this week"
+            if issue.get("critical_count", 0) > 0
+            else "Important — act this month"
+        )
         lines.append(
-            f"  {i}. {issue['category']} — {issue['count']} negative reviews, "
-            f"{issue['critical_count']} critical, example: \"{example}\""
+            f"  {i}. {issue['category']}\n"
+            f"     Negative reviews: {issue['count']}\n"
+            f"     Critical urgency: {issue['critical_count']}\n"
+            f"     Example customer quote: \"{example}\"\n"
+            f"     Action priority: {priority}"
         )
     return "\n".join(lines) if lines else "  (no significant negative issues)"
 
@@ -193,45 +190,52 @@ def build_action_plan_prompts(dashboard_data: dict, profile: dict) -> dict:
     data_quality_warning = ""
     if low_conf_pct > 25:
         data_quality_warning = (
-            f"⚠ WARNING: {low_conf_pct:.1f}% of classifications are low-confidence. "
+            f"\n⚠ WARNING: {low_conf_pct:.1f}% of classifications are low-confidence. "
             f"Treat findings from this dataset with caution."
         )
 
-    system_prompt = f"""You are a senior business analyst generating a structured JSON action plan from customer feedback statistics. You must respond with ONLY a valid JSON object — no markdown, no code fences, no explanation, no text before or after the JSON.
+    system_prompt = f"""You are a sharp, data-driven business consultant writing an action plan for a real business. You have customer feedback statistics. Your job is to write specific, actionable recommendations that a business owner can act on THIS WEEK — not generic management consulting filler.
 
-First reason through the data in a thinking block like this:
+GROUNDING RULE: Every recommendation must cite specific numbers from the data snapshot. Every action must be concrete enough that a manager knows exactly what to do on Monday morning. Never write phrases like "implement an optimization project", "streamline processes", "leverage synergies", or any other vague corporate language. If you cannot write a specific action, write nothing.
 
-<thinking>
-Your reasoning here about what the data shows
-</thinking>
+BAD example (never write this):
+"Implement a delivery speed optimization project to reduce delivery times by streamlining logistics and improving warehouse management."
 
-Then output the JSON object immediately after the closing thinking tag. The JSON must match this exact schema with no missing fields:
+GOOD example (write like this):
+"Delivery Speed has 5 negative reviews — 2 explicitly mention inconsistent tracking updates leaving customers in the dark. Fix: send automated SMS/email updates at each shipping stage. This costs nothing if you use your existing courier's API. Target: zero 'where is my order' complaints within 30 days."
 
+TONE: Direct, practical, respectful. Write like a trusted advisor not a consultant billing by the hour.
+
+OUTPUT FORMAT:
+First write a <thinking> block where you analyse the data — what is the single biggest problem, what is driving it, what is the easiest win, what is being ignored that matters. Be specific about the numbers.
+Then output ONE valid JSON object matching the schema exactly. No markdown fences. No text after the JSON.
+
+JSON SCHEMA:
 {{
-  "health_score": <integer 0-100, already provided — use exact value given>,
-  "health_label": "<exact string provided>",
-  "executive_summary": "<exactly 2 sentences citing real numbers from the data>",
-  "key_strengths": ["<one sentence per strength, empty array if positive_pct < 30>"],
+  "health_score": <integer 0-100, pre-computed — copy from DATA SNAPSHOT exactly>,
+  "health_label": <"Strong" | "Mixed" | "Needs Attention" | "Critical", pre-computed — copy from DATA SNAPSHOT exactly>,
+  "executive_summary": <string, exactly 2 sentences, must cite at least 2 numbers from the data>,
+  "key_strengths": [<string, one sentence each citing a specific number> ...],
   "recommendations": [
     {{
-      "rank": <integer>,
-      "title": "<short title>",
-      "rationale": "<one sentence with a real number from the data>",
-      "action": "<2-3 concrete sentences>",
-      "impact": "<high|medium|low>",
-      "effort": "<low|medium|high>",
-      "timeframe": "<immediate|short_term|long_term>"
+      "rank": <integer starting at 1>,
+      "title": <string, short action-oriented title>,
+      "rationale": <string, one sentence citing a specific number from the data AND the example customer quote>,
+      "action": <string, 2-3 concrete sentences on EXACTLY what to do — no vague language>,
+      "impact": <"high" | "medium" | "low">,
+      "effort": <"low" | "medium" | "high">,
+      "timeframe": <"immediate" | "short_term" | "long_term">
     }}
   ],
   "quick_win": {{
-    "title": "<short title>",
-    "description": "<1-2 sentences>",
-    "expected_outcome": "<one sentence>"
+    "title": <string, short title>,
+    "description": <string, 1-2 sentences referencing a specific issue from the data>,
+    "expected_outcome": <string, one sentence with a measurable target>
   }},
-  "data_quality_note": null
+  "data_quality_note": <string or null — null if low_confidence_pct <= 25>
 }}
 
-Rules: recommendations must have 3 to 5 items. impact must be exactly one of: high, medium, low. effort must be exactly one of: low, medium, high. timeframe must be exactly one of: immediate, short_term, long_term. health_score and health_label must use the exact values provided in the data — do not recompute them.
+Rules: recommendations must have 3 to 5 items. impact/effort/timeframe must use exact enum values. health_score and health_label must use the exact pre-computed values provided — do not recompute them.
 
 Company context: {company_name} is a {industry} business."""
 
@@ -256,11 +260,13 @@ URGENCY BREAKDOWN
 FEEDBACK CATEGORIES (sorted by volume)
 {categories_block}
 
-TOP NEGATIVE ISSUE AREAS
+TOP NEGATIVE ISSUE AREAS (with example customer quotes — use these in your recommendations)
 {top_issues_block}
 
-EMOTION DISTRIBUTION
+WHAT CUSTOMERS ARE FEELING:
 {emotions_block}
+
+The dominant emotion tells you the severity. Angry customers need immediate acknowledgment. Disappointed customers need process fixes. Frustrated customers need better communication.
 
 MULTI-ASPECT COMPLEXITY
 - Reviews addressing multiple issues: {multi_aspect_count} ({multi_aspect_pct:.1f}%)
@@ -268,13 +274,14 @@ MULTI-ASPECT COMPLEXITY
 
 DATA CONFIDENCE
 - High confidence classifications: {high_conf}
-- Low confidence classifications: {low_conf} ({low_conf_pct:.1f}%)
-{data_quality_warning}
+- Low confidence classifications: {low_conf} ({low_conf_pct:.1f}%){data_quality_warning}
 
 COMPANY CONTEXT
 {company_context_block}
 
-Generate the action plan JSON now."""
+SPECIFICITY REQUIREMENT: Your recommendations must reference the actual example feedback quoted above. If a customer said "tracking updates were inconsistent" your recommendation must address tracking specifically — not "delivery processes" generically. A business owner reading this should think "yes, this was written about MY customers" not "this could be about anyone."
+
+Generate the action plan JSON now. Be specific. Be direct. Be useful."""
 
     return {"system": system_prompt, "user": user_prompt}
 
@@ -289,7 +296,7 @@ def call_groq_action_plan(system_prompt: str, user_prompt: str) -> str:
             {"role": "user", "content": user_prompt},
         ],
         temperature=0.0,
-        max_tokens=2000,
+        max_tokens=3000,
     )
     return response.choices[0].message.content
 
@@ -300,7 +307,7 @@ def call_gemini_action_plan(system_prompt: str, user_prompt: str) -> str:
         system_instruction=system_prompt,
         generation_config={
             "temperature": 0.0,
-            "max_output_tokens": 2000,
+            "max_output_tokens": 3000,
             "response_mime_type": "application/json",
         },
     )
@@ -336,6 +343,23 @@ def validate_action_plan(raw_response: str) -> dict:
             "error": f"Schema validation failed: {str(e)}",
         }
 
+    # Reject boilerplate responses — force the LLM to be specific
+    result_dict = result.model_dump()
+    all_action_text = " ".join(
+        r["action"] + " " + r["rationale"]
+        for r in result_dict["recommendations"]
+    ).lower()
+
+    generic_count = sum(1 for phrase in GENERIC_PHRASES if phrase in all_action_text)
+    if generic_count >= 3:
+        return {
+            "success": False,
+            "result": None,
+            "error": (
+                f"Response contained {generic_count} generic phrases — retrying for specificity"
+            ),
+        }
+
     return {"success": True, "result": result, "error": None}
 
 
@@ -365,11 +389,14 @@ def generate_action_plan(dashboard_data: dict, profile: dict) -> dict:
             current_user_prompt = user_prompt
 
             if attempt > 0 and last_error:
-                correction = (
-                    f"PREVIOUS ATTEMPT FAILED. Reason: {last_error}. "
-                    f"Return ONLY valid JSON matching the schema. No markdown. No explanation."
+                retry_prefix = (
+                    f"RETRY ATTEMPT {attempt}. Previous attempt failed because: {last_error}\n\n"
+                    f"Critical reminder: Output ONLY valid JSON after the </thinking> tag. "
+                    f"No markdown. No code fences. The JSON must be complete — do not truncate it. "
+                    f"If you are running long, write shorter recommendation actions but complete "
+                    f"the full JSON structure.\n\n"
                 )
-                current_user_prompt = f"{correction}\n\n{user_prompt}"
+                current_user_prompt = f"{retry_prefix}{user_prompt}"
 
             try:
                 if use_gemini:

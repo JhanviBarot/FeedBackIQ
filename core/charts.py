@@ -121,6 +121,14 @@ def build_category_bar(category_data: list) -> go.Figure:
 
 
 def build_urgency_heatmap(urgency_matrix) -> go.Figure:
+    import pandas as _pd
+    if urgency_matrix is None or not isinstance(urgency_matrix, _pd.DataFrame) or urgency_matrix.empty:
+        return None
+    # Ensure required columns exist (guards against deserialization edge cases)
+    for level in ["critical", "medium", "low"]:
+        if level not in urgency_matrix.columns:
+            urgency_matrix = urgency_matrix.copy()
+            urgency_matrix[level] = 0
     categories = urgency_matrix.index.tolist()
     urgency_levels = ["critical", "medium", "low"]
     z_values = urgency_matrix[urgency_levels].values

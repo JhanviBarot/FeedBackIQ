@@ -76,7 +76,13 @@ class SessionStore:
         for key, value in data.items():
             if key == "urgency_matrix" and isinstance(value, dict):
                 try:
-                    result[key] = pd.DataFrame.from_dict(value, orient="split")
+                    # pd.DataFrame.from_dict(..., orient='split') is not supported in
+                    # pandas 2.x — use the DataFrame constructor directly instead.
+                    result[key] = pd.DataFrame(
+                        data=value.get("data", []),
+                        index=value.get("index", []),
+                        columns=value.get("columns", []),
+                    )
                 except Exception:
                     result[key] = pd.DataFrame()
             else:

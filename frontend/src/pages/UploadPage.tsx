@@ -55,7 +55,7 @@ export default function UploadPage() {
       navigate(`/analyse/processing?session=${sessionId}`);
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { detail?: unknown } }; message?: string };
-      const detail = axiosErr?.response?.data?.detail;
+      const detail = axiosErr?.response?.data?.error || axiosErr?.response?.data?.detail;
       setError(typeof detail === 'string' ? detail : axiosErr?.message || 'Analysis failed. Please try again.');
       setLoading(false);
     }
@@ -71,7 +71,7 @@ export default function UploadPage() {
       navigate(`/analyse/processing?session=${sessionId}`);
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { detail?: unknown } }; message?: string };
-      const detail = axiosErr?.response?.data?.detail;
+      const detail = axiosErr?.response?.data?.error || axiosErr?.response?.data?.detail;
       setError(typeof detail === 'string' ? detail : axiosErr?.message || 'Analysis failed. Please try again.');
       setLoading(false);
     }

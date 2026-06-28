@@ -241,8 +241,13 @@ async def analyse_file(
                        f"Available: {list(df.columns)}",
             )
 
-        lines = extract_review_lines(df, review_col)
-        raw_text = lines_to_raw_text(lines)
+        lines_result = extract_review_lines(df, review_col)
+        if lines_result.get("error"):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=lines_result["error"],
+            )
+        raw_text = lines_to_raw_text(lines_result["raw_text_lines"])
 
     finally:
         if tmp_path and os.path.exists(tmp_path):

@@ -66,6 +66,7 @@ export default function ResultsPage() {
 
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [downloadingCsv, setDownloadingCsv] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const [trendData, setTrendData] = useState<TrendResponse | null>(null);
   const [trendLoading, setTrendLoading] = useState(true);
@@ -124,18 +125,26 @@ export default function ResultsPage() {
   const handleDownloadPdf = async () => {
     if (!sessionId) return;
     setDownloadingPdf(true);
+    setDownloadError(null);
     try {
-      const response = await api.get(`/report/${sessionId}`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:8000/report/${sessionId}`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token ?? ''}` },
+      });
+      if (!response.ok) throw new Error(`Server returned ${response.status}`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
+      link.style.display = 'none';
       link.href = url;
-      link.setAttribute('download', `feedbackiq_report_${Date.now()}.pdf`);
+      link.download = `feedbackiq_report_${new Date().toISOString().slice(0, 10)}.pdf`;
       document.body.appendChild(link);
       link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch {
-      // no-op — user can retry
+      document.body.removeChild(link);
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      setDownloadError(`PDF download failed: ${(err as Error).message}`);
     } finally {
       setDownloadingPdf(false);
     }
@@ -144,18 +153,26 @@ export default function ResultsPage() {
   const handleDownloadCsv = async () => {
     if (!sessionId) return;
     setDownloadingCsv(true);
+    setDownloadError(null);
     try {
-      const response = await api.get(`/export/${sessionId}`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }));
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost:8000/export/${sessionId}`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token ?? ''}` },
+      });
+      if (!response.ok) throw new Error(`Server returned ${response.status}`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
+      link.style.display = 'none';
       link.href = url;
-      link.setAttribute('download', 'feedbackiq_results.csv');
+      link.download = `feedbackiq_results_${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(link);
       link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch {
-      // no-op — user can retry
+      document.body.removeChild(link);
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      setDownloadError(`CSV download failed: ${(err as Error).message}`);
     } finally {
       setDownloadingCsv(false);
     }
@@ -715,6 +732,12 @@ export default function ResultsPage() {
         )}
 
         {/* SECTION 9 — Download action bar */}
+        {downloadError && (
+          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+            <p className="text-red-700 text-sm">{downloadError}</p>
+          </div>
+        )}
         <div className="flex flex-col sm:flex-row gap-3 pt-2 pb-8">
           <button
             onClick={handleDownloadPdf}

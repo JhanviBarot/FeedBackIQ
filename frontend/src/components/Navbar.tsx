@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BarChart3, ChevronDown, User, LogOut, Settings, Menu } from 'lucide-react';
+import { BarChart3, ChevronDown, User, LogOut, Menu } from 'lucide-react';
 
 interface NavbarProps {
   showSidebar?: boolean;
@@ -83,14 +83,6 @@ export default function Navbar({ showSidebar, onToggleSidebar }: NavbarProps) {
                 >
                   <User className="w-4 h-4" />
                   Profile
-                </Link>
-                <Link
-                  to="/account"
-                  onClick={() => setDropdownOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <Settings className="w-4 h-4" />
-                  Settings
                 </Link>
               </div>
               <div className="border-t border-gray-100 pt-1">

@@ -1,0 +1,134 @@
+[
+    {
+      "id": "logi_001",
+      "industry": "Logistics",
+      "issue_type": "delivery_accuracy",
+      "problem": "Packages being delivered to wrong addresses or left in unsafe locations",
+      "solution": "Implement GPS-verified proof of delivery requiring drivers to photograph the package at the delivery location with the address visible. Add a delivery preferences option in your customer portal where recipients specify safe locations, neighbours who can accept parcels, or specific instructions. Send a real-time delivery notification with the photograph so customers can immediately see where their parcel was left. Review drivers with more than 2 misdelivery complaints per month with additional training before the third occurs.",
+      "impact": "GPS photo proof of delivery reduces misdelivery disputes by 70% because the evidence resolves ambiguity immediately. Delivery preference options reduce failed first-attempt deliveries by 25-35%. Source: Convey Last Mile Delivery Research and MetaPack Consumer Delivery Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["delivery", "accuracy", "proof-of-delivery", "gps"]
+    },
+    {
+      "id": "logi_002",
+      "industry": "Logistics",
+      "issue_type": "delivery_accuracy",
+      "problem": "Failed delivery attempts when customers are at home causing frustration",
+      "solution": "Send a delivery day morning notification by 8am confirming the delivery is coming today with a 2-hour time window. Allow customers to redirect to a parcel locker or neighbour in real time if the window does not work. Give drivers a minimum 60-second wait time before marking as failed attempt and require them to knock twice and ring the bell. Offer a same-day redelivery option for failed attempts rather than defaulting to next working day.",
+      "impact": "Morning delivery day notifications reduce failed attempts by 20-25% because customers plan their day around the window. Same-day redelivery options increase customer satisfaction scores by 35% compared to next-day redelivery. Source: Barclaycard Last Mile Research and Whistl UK Delivery Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["delivery", "failed-attempt", "notification", "redelivery"]
+    },
+    {
+      "id": "logi_003",
+      "industry": "Logistics",
+      "issue_type": "customer_communication",
+      "problem": "Customers frustrated by lack of tracking updates leaving them uncertain about delivery",
+      "solution": "Trigger automated notifications at every status change: collected from sender, in transit, out for delivery, delivered. For shipments delayed beyond the original estimate, proactively notify the customer with a new estimate before they contact you to chase. Add a self-service tracking page that updates in real time using the tracking number without requiring account login. When a parcel has not moved for 48 hours, trigger an internal alert for investigation before the customer notices.",
+      "impact": "Proactive delay notifications reduce inbound contacts about late deliveries by 40-50%. Self-service tracking pages handle 60-70% of all delivery status queries without human involvement. Source: MetaPack Consumer Research and Narvar State of Returns Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["tracking", "communication", "notifications", "self-service"]
+    },
+    {
+      "id": "logi_004",
+      "industry": "Logistics",
+      "issue_type": "customer_communication",
+      "problem": "Time window promises not kept causing customers to wait unnecessarily",
+      "solution": "Narrow delivery time windows from full-day to 2-hour windows using route optimisation software. Send a live driver tracking link 30 minutes before arrival showing the driver on a map similar to a taxi app. If a time window will be missed by more than 30 minutes, trigger an automatic notification with the revised time before the original window closes. Measure on-time delivery rate by driver and route weekly and use the data in driver performance reviews.",
+      "impact": "Narrowing delivery windows from full-day to 2-hour increases customer satisfaction by 45%. Live driver tracking reduces time window complaints by 55% because customers can see the driver en route rather than waiting blindly. Source: Bringg Last Mile Delivery Research and DHL Customer Experience Report.",
+      "effort": "high",
+      "timeframe": "long_term",
+      "tags": ["time-window", "tracking", "route-optimisation", "punctuality"]
+    },
+    {
+      "id": "logi_005",
+      "industry": "Logistics",
+      "issue_type": "damage_prevention",
+      "problem": "Parcels arriving damaged due to handling or insufficient packaging",
+      "solution": "Conduct a drop test audit on your 10 most fragile shipment categories using the ISTA 2A testing standard. Identify packaging that fails at normal drop heights and upgrade it. Train drivers on correct loading sequence — heavy items on the bottom, fragile items secured vertically not horizontally. Add fragile stickers to qualifying shipments and audit compliance monthly by checking handling footage. Track damage claims by route and driver to identify handling problems at source.",
+      "impact": "Packaging upgrades based on drop test results reduce damage claims by 50-65% for affected product categories. Damage claims cost logistics providers 3-5x the item value when accounting for resolution time and customer retention impact. Source: ISTA Packaging Research and Pitney Bowes Parcel Shipping Index.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["damage", "packaging", "handling", "training"]
+    },
+    {
+      "id": "logi_006",
+      "industry": "Logistics",
+      "issue_type": "damage_prevention",
+      "problem": "Returns collections not handled with same care as outbound deliveries",
+      "solution": "Provide pre-printed return labels with clear instructions on how to package items for return. Train collection drivers on the same handling standards as delivery drivers — collections are often treated as lower priority but damage during return collection is as costly as outbound damage. Add a collection confirmation notification sent to the customer the moment the driver scans the return so they have proof of handover. Process return credits within 24 hours of the return arriving at the warehouse.",
+      "impact": "Return collection damage accounts for 15-20% of all logistics damage claims. Collection confirmation notifications reduce he said she said disputes about whether returns were collected by 80%. Source: Narvar State of Returns Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["returns", "collections", "damage", "confirmation"]
+    },
+    {
+      "id": "logi_007",
+      "industry": "Logistics",
+      "issue_type": "driver_professionalism",
+      "problem": "Customer complaints about driver behaviour or attitude during delivery",
+      "solution": "Implement a post-delivery customer rating system for drivers — a single thumbs up or thumbs down sent by SMS immediately after delivery. Review ratings weekly and identify drivers consistently receiving negative feedback. Add a driver code of conduct to onboarding training covering: uniform appearance, greeting customers by name if available, placing parcels gently not dropping them, and never leaving parcels blocking doorways. Recognise top-rated drivers monthly with a public acknowledgement.",
+      "impact": "Post-delivery driver ratings identify problematic behaviour that management would otherwise never see. Drivers who know they are rated perform measurably better — average satisfaction scores increase 15-20% after rating systems are introduced. Source: Bringg Driver Experience Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["driver", "professionalism", "rating", "behaviour"]
+    },
+    {
+      "id": "logi_008",
+      "industry": "Logistics",
+      "issue_type": "customer_communication",
+      "problem": "Customer service difficult to reach when delivery problems occur",
+      "solution": "Add a live chat option to your tracking page so customers can ask questions in context without needing to find a separate contact page. Create a self-service resolution flow for the 5 most common issues: wrong address, missed delivery, damaged parcel, missing item, and collection request. These 5 issues account for 80% of all contacts — resolving them self-serve eliminates the majority of inbound contact volume. Publish a direct phone number prominently — customers who cannot find a phone number escalate to public reviews.",
+      "impact": "Self-service resolution flows for the top 5 issue types reduce inbound contact volume by 40-50%. Customers who resolve issues without needing to call have satisfaction scores 20% higher than those who speak to an agent. Source: Zendesk Customer Experience Report and Gartner Service Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["customer-service", "self-service", "live-chat", "contact"]
+    },
+    {
+      "id": "logi_009",
+      "industry": "Logistics",
+      "issue_type": "delivery_accuracy",
+      "problem": "Parcel locker and alternative delivery point failures frustrating customers",
+      "solution": "Audit your parcel locker network monthly for out-of-service units and remove them from the delivery options immediately when they fail. Send an alternative if the designated locker is full rather than leaving the driver to make a judgement call. Ensure locker collection codes are sent within 5 minutes of delivery not batched with other notifications. For lockers with persistent technical issues, arrange a temporary alternative collection point and communicate it proactively to affected customers.",
+      "impact": "Parcel locker failures are rated as more frustrating than missed home deliveries because customers specifically chose lockers for convenience. Proactive communication when a locker fails reduces complaints by 60% compared to customers discovering the failure themselves. Source: InPost Parcel Locker Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["locker", "alternative-delivery", "collection", "reliability"]
+    },
+    {
+      "id": "logi_010",
+      "industry": "Logistics",
+      "issue_type": "customer_communication",
+      "problem": "B2B customers lacking visibility on bulk shipment status causing operational disruption",
+      "solution": "Provide B2B customers with a dedicated tracking dashboard showing all active shipments in one view with exception alerts highlighted in red. Assign a named account manager for any customer shipping more than 50 parcels per month — a named contact reduces escalations by 40% because issues are resolved before they become complaints. Send a weekly delivery performance report to B2B customers showing on-time rate, damage rate, and exceptions resolved. Proactively flag any shipment showing a delay before the customer notices.",
+      "impact": "B2B customers with dedicated account managers have 35% lower churn rates and 25% higher shipment volumes over 12 months. Weekly performance reports reduce B2B complaint rates by 30% as customers feel informed and in control. Source: Pitney Bowes Parcel Shipping Index and DHL B2B Customer Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["b2b", "visibility", "account-management", "reporting"]
+    },
+    {
+      "id": "logi_011",
+      "industry": "Logistics",
+      "issue_type": "delivery_accuracy",
+      "problem": "International shipments delayed by customs with no communication to customers",
+      "solution": "Provide customers with a customs documentation checklist at the point of booking international shipments — incorrect documentation is the number one cause of customs delays and is entirely preventable. When a shipment enters customs hold, notify the customer within 4 hours with a plain English explanation of what is needed and how to provide it. Partner with a customs broker for high-value shipment categories to handle clearance without customer involvement. Publish realistic customs clearance timeframes by destination country on your website.",
+      "impact": "Incorrect customs documentation causes 60% of international delivery delays. Proactive customs hold notifications with clear next steps reduce customer contacts about international delays by 45%. Source: DHL International Shipping Research and World Customs Organisation Data.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["international", "customs", "documentation", "communication"]
+    },
+    {
+      "id": "logi_012",
+      "industry": "Logistics",
+      "issue_type": "damage_prevention",
+      "problem": "Temperature sensitive shipments arriving outside acceptable temperature range",
+      "solution": "Use temperature logging devices inside shipments for sensitive goods and share the temperature report with the recipient on delivery. Review your cold chain packaging for the hottest and coldest months separately — packaging that works in October may fail in July. Audit your vehicle refrigeration units monthly and maintain service records. For high-value temperature-sensitive shipments, add a temperature deviation alert that notifies both operations and the customer in real time if the threshold is breached.",
+      "impact": "Temperature deviation during delivery accounts for 25-30% of pharmaceutical and food logistics complaints. Real-time temperature alerts reduce the financial impact of cold chain failures by allowing intervention before delivery rather than discovering the problem on arrival. Source: WHO Cold Chain Guidelines and IQVIA Pharmaceutical Logistics Research.",
+      "effort": "high",
+      "timeframe": "long_term",
+      "tags": ["temperature", "cold-chain", "sensitive-goods", "monitoring"]
+    }
+  ]

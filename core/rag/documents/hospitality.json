@@ -1,0 +1,167 @@
+[
+    {
+      "id": "hosp_001",
+      "industry": "Hospitality",
+      "issue_type": "checkin_speed",
+      "problem": "Guests frustrated by long check-in queues and slow front desk process",
+      "solution": "Implement mobile check-in via SMS or email link sent 24 hours before arrival. Allow guests to submit ID and payment details digitally in advance so arrival is just key collection. Add a dedicated express check-in lane for guests who completed mobile check-in. For peak arrival times between 2pm and 6pm, add a second front desk agent and a welcome drink station so waiting feels intentional rather than neglected.",
+      "impact": "Hotels implementing mobile check-in see 40% reduction in front desk queue complaints. Guests who complete mobile check-in rate their arrival experience 25% higher than those who queue. Source: Cornell Hospitality Research and Oracle Hospitality Guest Experience Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["check-in", "queue", "mobile", "arrival"]
+    },
+    {
+      "id": "hosp_002",
+      "industry": "Hospitality",
+      "issue_type": "checkin_speed",
+      "problem": "Guests arriving to find their room not ready despite booking a specific check-in time",
+      "solution": "Send a real-time room ready notification via SMS the moment housekeeping marks the room clean. Give guests whose rooms are not ready a specific time estimate not just we will call you. Offer a complimentary drink or luggage storage with a map of nearby attractions to fill the wait productively. Track room readiness patterns by day of week and adjust housekeeping schedules to prioritise rooms for guests with the earliest arrival times.",
+      "impact": "Real-time room ready SMS notifications reduce front desk complaints about late rooms by 55%. Offering a concrete wait time estimate reduces frustration by 40% compared to open-ended waits. Source: JD Power North America Hotel Guest Satisfaction Study.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["check-in", "room-ready", "housekeeping", "communication"]
+    },
+    {
+      "id": "hosp_003",
+      "industry": "Hospitality",
+      "issue_type": "room_cleanliness",
+      "problem": "Guests complaining about room cleanliness standards not meeting expectations",
+      "solution": "Implement a dual-check system where a supervisor inspects every room after housekeeping completes it before marking it ready. Create a room cleanliness checklist with photographic standards for each item — bed corners, bathroom grout, mirror surfaces, bin liners. Add a mid-stay housekeeping request option via the TV menu or SMS so guests can request additional cleaning without feeling they need to complain. Follow up with guests on day 2 of a multi-night stay to ask if everything meets expectations.",
+      "impact": "Supervisor dual-check systems reduce cleanliness complaints by 60-70%. Mid-stay check-in messages catch 80% of cleanliness issues before they become negative reviews. Source: ReviewPro Hotel Reputation Research and Cornell Hospitality Quarterly.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["cleanliness", "housekeeping", "quality-control", "mid-stay"]
+    },
+    {
+      "id": "hosp_004",
+      "industry": "Hospitality",
+      "issue_type": "room_cleanliness",
+      "problem": "Bathroom cleanliness specifically called out in negative reviews",
+      "solution": "Elevate bathroom cleaning to a separate checklist from general room cleaning. Add visible hygiene indicators: individually wrapped soap and amenities, a toilet band showing the toilet has been sanitised, fresh folded towels with the first sheet folded into a point. Replace shower curtains that show any mildew immediately rather than waiting for the next deep clean cycle. Add a bathroom inspection photo to the housekeeping completion record so issues can be traced.",
+      "impact": "Bathroom-specific quality improvements are the single highest-impact cleanliness intervention — bathroom complaints account for 45% of all cleanliness reviews. Hygiene indicators increase perceived cleanliness scores by 20% even when actual cleaning standards are unchanged. Source: TripAdvisor Hospitality Industry Insights Report.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["cleanliness", "bathroom", "housekeeping", "hygiene"]
+    },
+    {
+      "id": "hosp_005",
+      "industry": "Hospitality",
+      "issue_type": "food_quality",
+      "problem": "Restaurant or room service food quality not meeting guest expectations",
+      "solution": "Conduct a monthly blind tasting of your 10 most ordered dishes with staff and compare against what is sent to guests. Ensure portion sizes and presentation match menu photos consistently. For room service, add an insulated delivery bag to maintain temperature and a delivery time promise shown on the menu. Add a QR code to the menu linking to origin stories for key ingredients — this reframes quality perceptions before the guest takes a bite.",
+      "impact": "Consistent portion and presentation standards reduce food quality complaints by 35%. Temperature-maintained room service delivery reduces food complaints by 25% as temperature is the most common specific food complaint. Source: National Restaurant Association Customer Experience Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["food", "quality", "room-service", "restaurant"]
+    },
+    {
+      "id": "hosp_006",
+      "industry": "Hospitality",
+      "issue_type": "food_quality",
+      "problem": "Breakfast quality and variety complaints from guests",
+      "solution": "Survey departing guests specifically about breakfast with one question: what one thing would improve our breakfast? Rotate hot items weekly to reduce monotony for multi-night guests. Label all allergens clearly and add a dedicated allergen-free station. Ensure hot items are genuinely hot by checking temperatures every 20 minutes during service. Add one premium item to the buffet such as smoked salmon or artisan bread that signals quality even if most items are standard.",
+      "impact": "Breakfast satisfaction is the third most reviewed aspect of hotel stays after cleanliness and check-in. Adding one premium anchor item increases overall breakfast satisfaction scores by 15-20% disproportionate to its cost. Source: Cornell Hospitality Quarterly Breakfast Satisfaction Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["food", "breakfast", "buffet", "quality"]
+    },
+    {
+      "id": "hosp_007",
+      "industry": "Hospitality",
+      "issue_type": "staff_attitude",
+      "problem": "Guest complaints about unfriendly or unhelpful staff interactions",
+      "solution": "Implement a daily 10-minute team huddle before each shift to share one positive guest story and one service recovery story. Empower frontline staff to resolve complaints up to a set value such as 50 pounds without manager approval — speed of resolution matters more than the solution itself. Recognise staff publicly when they receive positive mentions in reviews. Add service standards to staff performance reviews with equal weight as operational metrics.",
+      "impact": "Empowering staff to resolve complaints immediately increases guest satisfaction scores by 25% compared to escalated resolutions. Staff who receive public recognition for positive reviews deliver measurably better service in the following 30 days. Source: Ritz-Carlton Leadership Centre Research and JD Power Hotel Staff Satisfaction Study.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["staff", "service", "empowerment", "recognition"]
+    },
+    {
+      "id": "hosp_008",
+      "industry": "Hospitality",
+      "issue_type": "staff_attitude",
+      "problem": "Guests feeling ignored or unacknowledged when passing staff in corridors",
+      "solution": "Train all staff in the 10-5 rule: acknowledge guests with eye contact and a smile at 10 feet, greet them verbally at 5 feet. This applies to all staff including housekeeping and maintenance not just front desk. Add guest name recognition training for front desk staff — using a guest's name once during an interaction increases satisfaction scores measurably. Brief housekeeping staff on current guest occupancy so they know which rooms to avoid disturbing.",
+      "impact": "The 10-5 rule implementation consistently increases overall service satisfaction scores by 10-15 points. Using a guest's name during an interaction increases the likelihood of a positive review by 20%. Source: Marriott Service Standards Research and Cornell School of Hotel Administration.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["staff", "service", "greeting", "guest-recognition"]
+    },
+    {
+      "id": "hosp_009",
+      "industry": "Hospitality",
+      "issue_type": "wifi_reliability",
+      "problem": "Guest complaints about slow or unreliable WiFi throughout the property",
+      "solution": "Conduct a WiFi coverage audit using a free tool like WiFi Analyzer walking every guest area including corridors and meeting rooms. Identify dead zones and add access points. Separate guest WiFi from staff operational systems so Netflix streaming by guests does not affect your property management system. Display the WiFi password prominently in the room on a card, on the TV welcome screen, and in the pre-arrival email — guests who cannot find the password instantly assume the WiFi is broken.",
+      "impact": "WiFi is now the most important amenity for business and leisure travellers alike, rated above breakfast in multiple studies. Fixing coverage dead zones reduces WiFi complaints by 50-70%. Clear password display reduces WiFi-related front desk contacts by 30%. Source: Statista Hotel Amenity Importance Survey and Oracle Hospitality Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["wifi", "connectivity", "amenities", "technical"]
+    },
+    {
+      "id": "hosp_010",
+      "industry": "Hospitality",
+      "issue_type": "complaint_handling",
+      "problem": "Guests leaving negative reviews that were never raised with staff during the stay",
+      "solution": "Send a mid-stay message on day 2 of every multi-night stay via SMS asking if everything is meeting expectations with a direct reply option. Train all staff to ask is everything okay with your stay today during any guest interaction. Make it visually easy to provide feedback in-room: a feedback card on the pillow, a QR code on the desk. Post-checkout, send a review request within 2 hours of departure when the experience is freshest — timing is the single biggest factor in review response rates.",
+      "impact": "Mid-stay messages catch 80% of issues before they become negative public reviews. Post-checkout review requests sent within 2 hours receive 3x more responses than those sent 24 hours later. Source: ReviewPro Global Hospitality Study and TripAdvisor Review Generation Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["complaints", "reviews", "feedback", "mid-stay"]
+    },
+    {
+      "id": "hosp_011",
+      "industry": "Hospitality",
+      "issue_type": "complaint_handling",
+      "problem": "Service failures not being recovered effectively leaving guests feeling dismissed",
+      "solution": "Adopt the LEARN recovery framework: Listen without interrupting, Empathise specifically with what went wrong, Apologise sincerely without excuses, Resolve the issue immediately, and Notify a manager so the issue is recorded and prevented. Always follow up with the guest after resolution to confirm they are satisfied. For significant failures, add a gesture of goodwill — a complimentary drink, late checkout, or room upgrade — within 30 minutes of the complaint.",
+      "impact": "Effective service recovery creates stronger loyalty than if no problem had occurred — known as the service recovery paradox. Guests whose complaints are resolved immediately are 70% more likely to return than those whose complaints are unresolved. Source: Harvard Business Review Service Recovery Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["complaints", "service-recovery", "loyalty", "training"]
+    },
+    {
+      "id": "hosp_012",
+      "industry": "Hospitality",
+      "issue_type": "value_for_money",
+      "problem": "Guests feeling the property did not deliver value for the price paid",
+      "solution": "Identify the 5 amenities or services that cost you the least but guests value most — often these are small personal touches like a welcome note, local recommendations card, or complimentary water bottle. Communicate the value of included services in the pre-arrival email: your rate includes breakfast for two, free parking, and unlimited high-speed WiFi. Add a local area guide curated by staff to the room — this costs nothing but signals care and increases perceived value significantly.",
+      "impact": "Communicating the value of included amenities increases value-for-money perception scores by 15-20% without changing the actual offering. Personal touches costing under 2 pounds per guest consistently rank in the top 5 factors mentioned in positive reviews. Source: Qualtrics Hospitality Experience Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["value", "perception", "amenities", "communication"]
+    },
+    {
+      "id": "hosp_013",
+      "industry": "Hospitality",
+      "issue_type": "noise_complaints",
+      "problem": "Guest complaints about noise from other guests or external sources",
+      "solution": "Map your noise sources: identify which rooms are adjacent to lifts, ice machines, car parks, or entertainment venues. Stop selling these rooms as standard and either discount them with transparent noise disclosure or soundproof them. For noise complaints received during a stay, offer an immediate room move rather than promising to investigate. Add quiet hours signage in corridors and brief late-arriving guests on quiet hours at check-in.",
+      "impact": "Proactively disclosing room noise characteristics at booking reduces noise complaints by 40% because expectation is set correctly. Offering an immediate room move resolves noise complaints with a 90% satisfaction rate versus 30% for promises to address the noise source. Source: Cornell Hospitality Quarterly Noise Study.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["noise", "rooms", "complaints", "soundproofing"]
+    },
+    {
+      "id": "hosp_014",
+      "industry": "Hospitality",
+      "issue_type": "communication",
+      "problem": "Guests arriving unprepared because pre-arrival communication was insufficient",
+      "solution": "Send a pre-arrival email 48 hours before check-in covering: exact address and parking instructions, check-in time and early check-in availability, WiFi details, breakfast times and location, and one local recommendation from staff. Include a direct phone number for questions. Send a same-day arrival message at 10am with a what to expect today summary. These two touchpoints eliminate the most common on-arrival questions and set expectations correctly.",
+      "impact": "Properties sending detailed pre-arrival emails see 30% fewer arrival-related complaints and 15% higher overall satisfaction scores from arrival through departure. Source: Oracle Hospitality Pre-Arrival Communication Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["communication", "pre-arrival", "email", "expectations"]
+    },
+    {
+      "id": "hosp_015",
+      "industry": "Hospitality",
+      "issue_type": "checkout",
+      "problem": "Checkout process slow or complicated causing frustration on departure",
+      "solution": "Offer express checkout via the room TV, a mobile app, or a slip under the door the night before departure. For guests who want a printed bill, have it ready before they arrive at front desk. Send an email receipt within 30 minutes of checkout so guests have their invoice before they reach the airport. Thank departing guests by name and ask if there is anything that could have made their stay better — this last-minute question captures feedback that prevents the same issue for the next guest.",
+      "impact": "Express checkout reduces morning front desk queues by 40-50% and is rated positively by 85% of guests who use it. Thanking guests by name at departure increases likelihood of a positive review by 25%. Source: JD Power Hotel Guest Satisfaction Study.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["checkout", "departure", "queue", "express"]
+    }
+  ]

@@ -1,0 +1,112 @@
+[
+    {
+      "id": "gen_001",
+      "industry": "General",
+      "issue_type": "complaint_handling",
+      "problem": "Customers leaving negative reviews without ever raising the issue directly",
+      "solution": "Add a visible feedback mechanism at every customer touchpoint — a QR code on receipts, a link in order confirmation emails, a button in your app. Make it take under 60 seconds to submit feedback. Respond to every negative review publicly within 24 hours with a specific acknowledgement of the issue and a direct contact method. Customers who see responsive public replies are significantly more likely to give the business a second chance.",
+      "impact": "Businesses that respond to reviews within 24 hours see 20% higher review scores over time compared to those who do not respond. Visible feedback mechanisms reduce the likelihood of a customer going straight to a public review platform by 35%. Source: ReviewTrackers Annual Online Reviews Survey.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["reviews", "complaints", "feedback", "response"]
+    },
+    {
+      "id": "gen_002",
+      "industry": "General",
+      "issue_type": "communication",
+      "problem": "Customers feeling uninformed after a problem occurs creating anxiety and frustration",
+      "solution": "Apply the rule of proactive communication: contact the customer before they contact you whenever something goes wrong. Even if you have no solution yet, acknowledging the problem within 2 hours of it occurring and giving a timeline for resolution prevents the emotional escalation that turns a manageable complaint into a critical review. Silence after a problem is always worse than an imperfect update.",
+      "impact": "Proactive problem communication reduces complaint escalation rates by 40-50%. Customers who are informed proactively about a problem are 3x more likely to remain customers than those who discover the problem themselves. Source: Forrester Customer Experience Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["communication", "complaints", "proactive", "retention"]
+    },
+    {
+      "id": "gen_003",
+      "industry": "General",
+      "issue_type": "service_recovery",
+      "problem": "Service failures not being recovered in a way that restores customer confidence",
+      "solution": "Train all customer-facing staff on the four elements of effective service recovery: acknowledge the specific problem without excuses, apologise sincerely, act immediately to fix it, and follow up to confirm resolution. The recovery gesture should match the severity of the failure — a minor inconvenience warrants a sincere apology, a significant failure warrants a tangible gesture. Speed of recovery matters more than the nature of the recovery — a fast imperfect solution beats a slow perfect one.",
+      "impact": "Effective service recovery can result in higher loyalty than if no problem had occurred — known as the service recovery paradox. Customers whose problems are resolved on first contact are 70% more likely to remain customers versus 30% for those requiring multiple contacts. Source: Harvard Business Review Service Recovery Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["service-recovery", "complaints", "loyalty", "training"]
+    },
+    {
+      "id": "gen_004",
+      "industry": "General",
+      "issue_type": "first_contact_resolution",
+      "problem": "Customers having to contact support multiple times to resolve the same issue",
+      "solution": "Measure first contact resolution rate and set a target of 80% or above. When a case is closed, wait 24 hours and send a one-question email: was your issue fully resolved? If the customer says no, immediately reopen and prioritise. Train support staff to anticipate related questions and answer them proactively in the same response — if someone asks about a refund timeline, also tell them what to do if it does not arrive. Every additional contact a customer needs reduces their satisfaction score by 15%.",
+      "impact": "Improving first contact resolution from 70% to 80% reduces total support volume by 25-30% because repeat contacts disappear. Each additional contact needed to resolve an issue reduces customer retention likelihood by 15%. Source: SQM Group First Contact Resolution Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["support", "first-contact-resolution", "efficiency", "satisfaction"]
+    },
+    {
+      "id": "gen_005",
+      "industry": "General",
+      "issue_type": "self_service",
+      "problem": "High support volume for questions that customers could answer themselves",
+      "solution": "Identify your top 10 most frequent support questions by analysing 3 months of tickets. Write a clear help article for each one with a descriptive title that matches how customers phrase the question not how your team describes it internally. Add a search bar to your help centre and test it with real customer language. Place a help centre link prominently in every transactional email and in your product or service interface so customers find it before emailing.",
+      "impact": "A well-structured help centre addressing the top 10 questions reduces support volume by 20-30% within 60 days. Customers who self-serve successfully have satisfaction scores equivalent to those resolved by a live agent. Source: Zendesk Customer Experience Trends Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["self-service", "help-centre", "support", "documentation"]
+    },
+    {
+      "id": "gen_006",
+      "industry": "General",
+      "issue_type": "complaint_handling",
+      "problem": "Online reviews going unanswered making the business appear not to care",
+      "solution": "Set up Google and Trustpilot review alerts so you are notified of every new review within the hour. Respond to every review — positive and negative — within 24 hours. For negative reviews, never be defensive: acknowledge the specific issue, apologise, and provide a direct contact method to resolve it offline. For positive reviews, thank the customer specifically referencing something they mentioned. Review responses are public marketing — future customers read them to assess how you handle problems.",
+      "impact": "Businesses that respond to at least 25% of their reviews earn 35% more revenue than those that do not. Responding to negative reviews converts 33% of unhappy reviewers into returning customers when the response is genuine and specific. Source: Harvard Business School Online Reviews Research and Trustpilot Business Report.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["reviews", "reputation", "response", "google"]
+    },
+    {
+      "id": "gen_007",
+      "industry": "General",
+      "issue_type": "loyalty",
+      "problem": "Repeat customers not feeling recognised or valued compared to new customers",
+      "solution": "Identify your top 20% of customers by purchase frequency or value and create a simple VIP tier with tangible benefits — early access to new products, a dedicated contact, or a small annual gift. Send a personalised anniversary message on the date of their first purchase each year. Train staff to recognise repeat customers and acknowledge them specifically. Never offer a better deal to new customers than you offer to existing ones through public promotions — this is the fastest way to lose loyal customers.",
+      "impact": "Increasing customer retention by 5% increases profits by 25-95% depending on the industry. Loyal customers spend 67% more per transaction than new customers. Recognition-based retention programmes cost 5-7x less than acquisition programmes to deliver equivalent revenue. Source: Bain and Company Customer Loyalty Research and Harvard Business Review.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["loyalty", "retention", "recognition", "vip"]
+    },
+    {
+      "id": "gen_008",
+      "industry": "General",
+      "issue_type": "communication",
+      "problem": "Customer-facing communication using internal jargon or unclear language",
+      "solution": "Audit your 5 most frequently sent customer emails and read them as a customer who has never heard of your company. Replace any internal terminology with plain English. Apply the rule: if a 14-year-old could not understand it, rewrite it. Use active voice — your order was delayed by us not your order has been subject to a delay. Add a one-paragraph summary at the top of any email longer than 3 paragraphs stating what the customer needs to know and what action if any they need to take.",
+      "impact": "Clear customer communication reduces follow-up contacts by 20-25% because customers understand what is happening and what to do next. Emails written at a Grade 8 reading level or below have 36% higher response rates than those written at Grade 12 level. Source: Boomerang Email Research and Nielsen Norman Group Communication Study.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["communication", "language", "clarity", "email"]
+    },
+    {
+      "id": "gen_009",
+      "industry": "General",
+      "issue_type": "service_recovery",
+      "problem": "Compensation or goodwill gestures not matching the severity of the failure",
+      "solution": "Create a simple compensation matrix for your most common failure types. Minor failures such as a small delay: sincere apology only. Moderate failures such as a missed appointment: apology plus a discount or credit. Significant failures such as a wrong item or extended outage: apology plus meaningful compensation plus follow-up call. The compensation amount should feel slightly generous not calculated — a gesture that feels like it was weighed to the penny creates cynicism rather than goodwill.",
+      "impact": "Compensation that feels proportionate and slightly generous converts 60% of dissatisfied customers into loyal advocates. Under-compensation leaves customers feeling their experience was not taken seriously and doubles the likelihood of a public negative review. Source: Customer Thermometer Service Recovery Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["compensation", "service-recovery", "complaints", "goodwill"]
+    },
+    {
+      "id": "gen_010",
+      "industry": "General",
+      "issue_type": "feedback_collection",
+      "problem": "Business not collecting enough feedback to identify problems before they escalate",
+      "solution": "Add a post-transaction survey triggered automatically 24 hours after every purchase or service interaction. Keep it to a maximum of 3 questions: an NPS score from 0 to 10, one open text question asking what could have been better, and one asking what you did well. Review responses weekly not monthly — problems compound quickly and early detection is the difference between a fixable issue and a reputation crisis. Share feedback summaries with all staff weekly so the whole team understands what customers are experiencing.",
+      "impact": "Businesses collecting systematic post-transaction feedback identify problems 6-8 weeks earlier than those relying on public reviews. Weekly feedback reviews reduce the time to implement fixes by 50% compared to monthly reviews. Source: Qualtrics XM Institute Customer Feedback Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["feedback", "nps", "surveys", "monitoring"]
+    }
+  ]

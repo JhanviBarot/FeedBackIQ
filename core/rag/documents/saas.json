@@ -1,0 +1,167 @@
+[
+    {
+      "id": "saas_001",
+      "industry": "SaaS",
+      "issue_type": "onboarding",
+      "problem": "New users signing up but not activating or completing onboarding",
+      "solution": "Implement a progress-based onboarding checklist visible on the dashboard showing exactly what steps remain. Trigger a personal email from the founder or CEO within 2 hours of signup asking one specific question about what the user is trying to achieve. Set up automated day 1, day 3, and day 7 email sequences that guide users to the single most important action in your product. Identify your activation metric — the one action that predicts retention — and funnel every new user toward it within their first session.",
+      "impact": "Products with structured onboarding checklists see 30-40% higher activation rates. Personalised founder emails in the first 2 hours have 60-80% open rates and directly increase trial-to-paid conversion by 15-25%. Source: Intercom Product Onboarding Research and OpenView SaaS Benchmarks.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["onboarding", "activation", "retention", "email"]
+    },
+    {
+      "id": "saas_002",
+      "industry": "SaaS",
+      "issue_type": "onboarding",
+      "problem": "Users confused about where to start or what the product does after signup",
+      "solution": "Add an interactive product tour triggered automatically on first login covering only the 3 most important features — not every feature. Use empty state screens wisely: instead of showing a blank dashboard, show a pre-populated example with real-looking data so users immediately understand what the product looks like when working. Add a persistent help widget in the corner that surfaces contextual tips based on which page the user is on.",
+      "impact": "Interactive product tours increase feature adoption by 47% for the features covered. Empty states with example data reduce first-session drop-off by 25-30%. Source: Appcues SaaS Onboarding Benchmark Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["onboarding", "ux", "product-tour", "empty-states"]
+    },
+    {
+      "id": "saas_003",
+      "industry": "SaaS",
+      "issue_type": "feature_discoverability",
+      "problem": "Users not discovering or using key features they are paying for",
+      "solution": "Analyse your feature usage data and identify which features have low adoption despite high value. Add contextual tooltips that appear the first time a user reaches a page with an underused feature. Send a monthly email to each user showing features they have not tried yet with a one-click link to activate them. Add a What is new changelog visible in the product so users see every improvement you ship.",
+      "impact": "Contextual feature discovery campaigns increase feature adoption by 20-35%. Users who use 3 or more core features have 4x higher retention rates than those using only 1. Source: Pendo Product Analytics Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["features", "adoption", "tooltips", "changelog"]
+    },
+    {
+      "id": "saas_004",
+      "industry": "SaaS",
+      "issue_type": "customer_support",
+      "problem": "Support response times too slow causing frustration and churn risk",
+      "solution": "Implement live chat during business hours with a clear offline message showing when support returns. Create a searchable help centre with articles covering your 20 most common support questions — this alone deflects 30-40% of tickets before they are created. Set internal SLA targets: critical bugs responded to within 1 hour, billing issues within 4 hours, feature questions within 24 hours. Use a shared inbox tool so all support conversations are visible to the whole team and never get lost.",
+      "impact": "SaaS companies with live chat see 20% higher trial conversion rates. Help centres that answer the top 20 questions deflect 30-40% of support volume. Customers who receive support within 1 hour are 7x more likely to renew. Source: Zendesk SaaS Customer Service Benchmark.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["support", "response-time", "live-chat", "help-centre"]
+    },
+    {
+      "id": "saas_005",
+      "industry": "SaaS",
+      "issue_type": "customer_support",
+      "problem": "Customers unable to find answers in documentation leading to repetitive support tickets",
+      "solution": "Audit your last 100 support tickets and identify the top 10 questions that appear most frequently. Write a dedicated help article for each one with screenshots. Add a search bar to your help centre that actually works — test it with real customer language not technical jargon. Add a Did this article help you feedback button at the bottom of every help article and use the responses to identify which articles need improvement.",
+      "impact": "Well-structured documentation reduces support ticket volume by 20-30% within 60 days of launch. Help articles with screenshots resolve issues 40% faster than text-only articles. Source: Salesforce State of Service Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["documentation", "self-service", "help-centre", "tickets"]
+    },
+    {
+      "id": "saas_006",
+      "industry": "SaaS",
+      "issue_type": "billing",
+      "problem": "Customers confused or upset about billing charges and invoice clarity",
+      "solution": "Send a clear billing reminder email 7 days before every charge showing exactly what will be billed and why. Provide an itemised invoice that a non-technical person can understand — avoid showing raw API usage numbers without explaining what they mean in plain English. Add a billing portal where customers can view all past invoices, update payment methods, and downgrade or cancel without contacting support. Never surprise a customer with a charge they did not expect.",
+      "impact": "Transparent billing reminders reduce involuntary churn from failed payments by 20-30%. Self-service billing portals reduce billing-related support contacts by 40-50%. Source: Stripe Revenue Recovery Research and ChartMogul SaaS Metrics Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["billing", "transparency", "invoices", "self-service"]
+    },
+    {
+      "id": "saas_007",
+      "industry": "SaaS",
+      "issue_type": "billing",
+      "problem": "Pricing tiers unclear causing customers to feel they are on the wrong plan",
+      "solution": "Simplify your pricing page to show maximum 3 tiers with clear differentiation. For each tier, lead with who it is for not what features it includes — Small teams, Growing businesses, Enterprises. Add a plan recommendation quiz that takes 30 seconds and suggests the right tier based on answers. Show a comparison table that makes upgrading feel like a natural next step not a sales pitch. Include a cost calculator for usage-based elements so customers never feel surprised.",
+      "impact": "Simplified 3-tier pricing pages increase trial signup conversion by 10-20%. Plan recommendation tools increase upgrades by 15% by matching customers to the right tier from the start. Source: Price Intelligently SaaS Pricing Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["pricing", "plans", "conversion", "upgrade"]
+    },
+    {
+      "id": "saas_008",
+      "industry": "SaaS",
+      "issue_type": "performance",
+      "problem": "Product slow to load or experiencing frequent downtime causing user frustration",
+      "solution": "Set up a public status page (statuspage.io has a free tier) and communicate all incidents proactively before customers notice. When an incident occurs, post an update every 30 minutes even if just to say you are still investigating — silence is worse than admitting you do not have an answer yet. After each incident, publish a brief post-mortem explaining what happened and what you are doing to prevent recurrence. For performance issues, identify your slowest 3 pages using your analytics tool and focus optimisation there first.",
+      "impact": "Public status pages reduce support contacts during incidents by 25-40% because customers self-serve the information. Post-incident transparency emails have 70% open rates and significantly reduce churn following outages. Source: PagerDuty Incident Management Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["performance", "uptime", "status-page", "incidents"]
+    },
+    {
+      "id": "saas_009",
+      "industry": "SaaS",
+      "issue_type": "performance",
+      "problem": "Mobile app or web app performing poorly on mobile devices",
+      "solution": "Test your product on actual mobile devices across different screen sizes and connection speeds not just desktop Chrome in responsive mode. Identify the 3 most common tasks your mobile users try to complete and optimise specifically for those flows. Reduce the number of taps required for core actions on mobile to 3 or fewer. Implement offline mode for the most critical features so the app remains useful on poor connections.",
+      "impact": "Mobile-optimised SaaS products see 35% higher engagement from mobile users. Reducing core task completion to 3 taps increases mobile daily active users by 20-25%. Source: Google Mobile UX Research and Mixpanel Mobile Engagement Report.",
+      "effort": "high",
+      "timeframe": "long_term",
+      "tags": ["mobile", "performance", "ux", "engagement"]
+    },
+    {
+      "id": "saas_010",
+      "industry": "SaaS",
+      "issue_type": "churn",
+      "problem": "Customers cancelling without explanation leaving no opportunity to save them",
+      "solution": "Add a cancellation flow that asks one required question: what is the main reason you are leaving with 5-6 specific options. Use these responses to identify your highest-volume churn reasons and fix them. For customers who select price as their reason, offer a pause option or a downgrade option before confirming cancellation — 15-20% of those customers will accept. For customers who select missing feature, add them to a notification list and email them when that feature ships.",
+      "impact": "Cancellation surveys capture churn reasons for 70-80% of churning customers providing direct product roadmap input. Offering a pause option recovers 15-20% of customers who would otherwise cancel. Source: ProfitWell Churn Research and Recurly Subscription Retention Report.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["churn", "retention", "cancellation", "win-back"]
+    },
+    {
+      "id": "saas_011",
+      "industry": "SaaS",
+      "issue_type": "churn",
+      "problem": "Trial users not converting to paid after free trial ends",
+      "solution": "Identify the exact in-product actions that correlate with trial-to-paid conversion in your data — this is your activation metric. Build your entire trial experience around getting users to that action within the first 3 days. Send a day 5 email to trials who have not hit the activation metric offering a 15-minute onboarding call. Extend trials by 7 days for users who are clearly engaged but not yet converted — they convert at 3x the rate of users given a hard deadline.",
+      "impact": "SaaS products that identify and optimise for their activation metric see 25-40% higher trial conversion rates. Offering onboarding calls to engaged non-converting trials increases conversion by 30-40%. Source: OpenView Partners SaaS Metrics Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["trial", "conversion", "activation", "onboarding"]
+    },
+    {
+      "id": "saas_012",
+      "industry": "SaaS",
+      "issue_type": "feature_discoverability",
+      "problem": "Users requesting features that already exist in the product",
+      "solution": "Add a feature search bar to your help centre and in-product help widget. When a user submits a feature request, automatically search your existing feature set and show similar existing features before confirming the request. Add a searchable release notes page showing everything shipped in the last 6 months. Send a monthly product update email that highlights 3 features with a GIF or screenshot showing exactly how to use them.",
+      "impact": "In-product feature search reduces duplicate feature requests by 30-40%. Monthly product update emails have 35-45% open rates among active users and directly increase feature adoption for highlighted features by 20%. Source: Pendo State of Product Leadership Report.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["features", "communication", "changelog", "product-updates"]
+    },
+    {
+      "id": "saas_013",
+      "industry": "SaaS",
+      "issue_type": "integration",
+      "problem": "Customers frustrated by lack of integrations with tools they already use",
+      "solution": "Survey your top 50 customers and ask which 3 tools they wish your product integrated with. Build the top 2 most requested integrations first — they will apply to the broadest customer base. Publish a public integrations roadmap showing what is coming and when. For integrations you cannot build yourself, document how to connect via Zapier or Make which give access to 5000+ apps with no custom development required.",
+      "impact": "Products with strong integrations see 25% lower churn rates because they become embedded in the customer's workflow. Publishing an integrations roadmap reduces integration-related churn by 15% as customers wait rather than leave. Source: Zapier Partner Research and SaaS Industry Reports.",
+      "effort": "high",
+      "timeframe": "long_term",
+      "tags": ["integrations", "workflow", "zapier", "retention"]
+    },
+    {
+      "id": "saas_014",
+      "industry": "SaaS",
+      "issue_type": "customer_support",
+      "problem": "Customers feeling their feedback and feature requests are ignored",
+      "solution": "Create a public product roadmap using a free tool like Trello or Notion showing In Progress, Planned, and Under Consideration columns. When a customer submits feedback, reply within 24 hours acknowledging it specifically — not a generic thank you. When you ship something a customer requested, email them personally to tell them. This closes the feedback loop and creates extraordinarily loyal customers who become active advocates.",
+      "impact": "Public product roadmaps reduce churn among customers who have submitted feedback by 20-25%. Closing the feedback loop with a personal email when a feature ships generates NPS scores 15-20 points higher than average. Source: ProductBoard Customer Feedback Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["feedback", "roadmap", "communication", "advocacy"]
+    },
+    {
+      "id": "saas_015",
+      "industry": "SaaS",
+      "issue_type": "onboarding",
+      "problem": "Team or multi-seat accounts with low adoption across team members",
+      "solution": "Send a separate welcome email to every team member added to an account not just the admin who signed up. Show team admins an adoption dashboard showing which team members have logged in and which have not. Trigger an automated nudge email to inactive team members 3 days after being added. Add team-specific onboarding tasks that require collaboration — this naturally pulls additional team members into the product.",
+      "impact": "Team-wide onboarding emails increase seat activation rates from 40% to 65-70% within the first week. Adoption dashboards for admins increase their engagement in driving team usage, which correlates with 30% lower churn at the account level. Source: Gainsight Customer Success Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["onboarding", "teams", "adoption", "activation"]
+    }
+  ]

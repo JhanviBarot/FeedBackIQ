@@ -1,3 +1,4 @@
+import asyncio
 import os
 import time
 from contextlib import asynccontextmanager
@@ -32,6 +33,7 @@ from api.middleware.error_handlers import (
 )
 from core.config_validator import validate_config
 from core.logger import logger
+from core.rag.knowledge_base import initialise_knowledge_base
 
 
 class ResponseTimeMiddleware(BaseHTTPMiddleware):
@@ -57,6 +59,14 @@ async def lifespan(app: FastAPI):
     except EnvironmentError as exc:
         logger.error(str(exc))
         raise
+
+    try:
+        loop = asyncio.get_event_loop()
+        kb_count = await loop.run_in_executor(None, initialise_knowledge_base)
+        logger.info(f"Knowledge base ready: {kb_count} documents loaded")
+    except Exception as exc:
+        logger.warning(f"Knowledge base initialisation failed (non-fatal): {exc}")
+
     yield
     logger.info("FeedbackIQ shutting down")
 
@@ -116,7 +126,7 @@ def create_app() -> FastAPI:
             modules=[
                 "auth", "sessions", "analyse", "dashboard",
                 "action_plan", "report", "export", "trends",
-                "benchmarks", "webhooks",
+                "benchmarks", "webhooks", "rag",
             ],
         )
 

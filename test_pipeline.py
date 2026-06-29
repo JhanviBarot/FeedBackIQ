@@ -2002,4 +2002,120 @@ check("feedbackiq-api" in _render_content24l,
       "24l: render.yaml contains 'feedbackiq-api'")
 
 # ─────────────────────────────────────────────────────────────
+# SECTION 25 — RAG Pipeline Tests (zero API cost)
+# ─────────────────────────────────────────────────────────────
+print("\n--- Section 25: RAG Pipeline ---")
+
+from core.rag.embedder import embed_query as _eq25, embed_texts as _et25
+from core.rag.knowledge_base import (
+    load_documents_from_files as _ldf25,
+    initialise_knowledge_base as _ikb25,
+    retrieve_relevant_solutions as _rrs25,
+    build_retrieval_query as _brq25,
+)
+from core.action_plan import build_action_plan_prompts as _bapp25
+from unittest.mock import patch as _patch25
+
+# 25a — embed_query returns a list of 384 floats
+_emb25a = _eq25("test query")
+check(isinstance(_emb25a, list), "25a: embed_query returns a list")
+check(len(_emb25a) == 384, f"25a: embed_query returns 384 dimensions (got {len(_emb25a)})")
+check(all(isinstance(x, float) for x in _emb25a), "25a: all elements are floats")
+
+# 25b — embed_texts with 2 inputs returns 2 embeddings each with 384 dimensions
+_emb25b = _et25(["text one", "text two"])
+check(len(_emb25b) == 2, "25b: embed_texts returns 2 embeddings for 2 inputs")
+check(len(_emb25b[0]) == 384, f"25b: first embedding has 384 dimensions (got {len(_emb25b[0])})")
+check(len(_emb25b[1]) == 384, f"25b: second embedding has 384 dimensions (got {len(_emb25b[1])})")
+
+# 25c — load_documents_from_files returns 80 or more documents
+_docs25c = _ldf25()
+check(len(_docs25c) >= 80, f"25c: load_documents_from_files returns 80+ documents (got {len(_docs25c)})")
+
+# 25d — all documents have required fields
+_required_fields25d = {"id", "industry", "issue_type", "problem", "solution", "impact", "effort", "timeframe", "tags"}
+_missing25d = [
+    (doc.get("id", f"index-{i}"), _required_fields25d - set(doc.keys()))
+    for i, doc in enumerate(_docs25c)
+    if _required_fields25d - set(doc.keys())
+]
+check(len(_missing25d) == 0,
+      f"25d: all documents have required fields (problems in {len(_missing25d)} docs: {_missing25d[:3]})")
+
+# 25e — all document ids are unique across all files
+_ids25e = [doc["id"] for doc in _docs25c]
+check(len(_ids25e) == len(set(_ids25e)),
+      f"25e: all document ids are unique ({len(_ids25e)} ids, {len(set(_ids25e))} unique)")
+
+# 25f — initialise_knowledge_base returns count >= 80
+_count25f = _ikb25()
+check(_count25f >= 80, f"25f: initialise_knowledge_base returns count >= 80 (got {_count25f})")
+
+# 25g — retrieve_relevant_solutions with E-commerce returns at least 1 result
+_results25g = _rrs25("delivery tracking complaints", "E-commerce", n_results=3)
+check(len(_results25g) >= 1, f"25g: retrieve_relevant_solutions returns >= 1 result (got {len(_results25g)})")
+
+# 25h — every retrieved result has solution and impact keys
+_missing25h = [i for i, r in enumerate(_results25g) if "solution" not in r or "impact" not in r]
+check(len(_missing25h) == 0,
+      f"25h: all retrieved results have solution and impact keys (missing in indices: {_missing25h})")
+
+# 25i — relevance scores are all between 0 and 1
+_bad_scores25i = [r["relevance_score"] for r in _results25g if not (0 <= r["relevance_score"] <= 1)]
+check(len(_bad_scores25i) == 0,
+      f"25i: all relevance scores are between 0 and 1 (bad: {_bad_scores25i})")
+
+# 25j — retrieve_relevant_solutions with industry "Other" returns results without error
+try:
+    _results25j = _rrs25("delivery tracking complaints", "Other", n_results=3)
+    check(True, "25j: retrieve_relevant_solutions with industry='Other' does not raise")
+except Exception as _e25j:
+    check(False, f"25j: retrieve_relevant_solutions with industry='Other' raised: {_e25j}")
+
+# 25k — build_retrieval_query output contains industry name and issue category text
+_issues25k = [{"category": "Delivery Speed", "count": 5, "critical_count": 2, "example": "Late delivery"}]
+_query25k = _brq25(_issues25k, "E-commerce", "frustrated")
+check("E-commerce" in _query25k, "25k: build_retrieval_query output contains industry name")
+check("Delivery Speed" in _query25k, "25k: build_retrieval_query output contains issue category text")
+
+# 25l — RAG failure does not break build_action_plan_prompts
+_mock_dash25l = {
+    "total_reviews": 5,
+    "sentiment": {"positive_count": 3, "negative_count": 2, "neutral_count": 0,
+                  "positive_pct": 60.0, "negative_pct": 40.0, "neutral_pct": 0.0, "overall_score": 65.0},
+    "categories": [{"category": "Delivery", "count": 3, "pct": 60.0}],
+    "urgency": {"critical_count": 0, "medium_count": 2, "low_count": 3, "critical_pct": 0.0},
+    "emotions": [{"emotion": "frustrated", "count": 3, "pct": 60.0}],
+    "top_issues": [{"category": "Delivery", "count": 2, "critical_count": 0, "example": "Late delivery"}],
+    "confidence": {"high_count": 4, "medium_count": 1, "low_count": 0, "low_pct": 0.0},
+    "top_category": "Delivery",
+    "multi_aspect": {"multi_aspect_count": 1, "multi_aspect_pct": 20.0, "single_aspect_count": 4},
+    "health_score_inputs": {"positive_pct": 60.0, "critical_pct": 0.0, "low_confidence_pct": 0.0},
+}
+_mock_profile25l = {
+    "company_name": "TestCo", "industry": "E-commerce",
+    "categories": ["Delivery"], "description": "", "urgency_definition": "",
+}
+with _patch25("core.action_plan.retrieve_relevant_solutions", side_effect=Exception("RAG down")):
+    try:
+        _prompts25l = _bapp25(_mock_dash25l, _mock_profile25l, [])
+        check("system" in _prompts25l and "user" in _prompts25l,
+              "25l: build_action_plan_prompts returns system+user dict even when RAG context is empty")
+    except Exception as _e25l:
+        check(False, f"25l: build_action_plan_prompts raised unexpectedly: {_e25l}")
+
+# 25m — when rag_context is provided, PROVEN SOLUTIONS appears in user prompt
+_mock_rag25m = [{
+    "problem": "Slow delivery tracking",
+    "solution": "Send SMS at every delivery stage",
+    "impact": "40% fewer complaints",
+    "effort": "medium",
+    "timeframe": "short_term",
+    "relevance_score": 0.92,
+}]
+_prompts25m = _bapp25(_mock_dash25l, _mock_profile25l, _mock_rag25m)
+check("PROVEN SOLUTIONS" in _prompts25m["user"],
+      "25m: PROVEN SOLUTIONS appears in user prompt when rag_context is provided")
+
+# ─────────────────────────────────────────────────────────────
 print(f"\n{'='*60}\nALL TESTS PASSED — zero API calls made\n{'='*60}")

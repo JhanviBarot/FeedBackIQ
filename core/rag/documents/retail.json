@@ -1,0 +1,134 @@
+[
+    {
+      "id": "retail_001",
+      "industry": "Retail",
+      "issue_type": "staff_helpfulness",
+      "problem": "Customers complaining that staff are unhelpful or hard to find on the shop floor",
+      "solution": "Introduce a visible staff availability system — staff wear a different coloured lanyard or badge when they are free to assist versus busy with a task. Station one staff member as a floor greeter during peak hours whose only job is to welcome customers and direct them. Train all staff on the top 20 most frequently asked questions about products, promotions, and store layout so they can answer without needing to find a manager. Conduct a monthly mystery shop to identify where customers are being ignored.",
+      "impact": "Stores with designated floor greeters see 15-20% higher conversion rates from browsers to buyers. Staff who can answer product questions without escalating create 30% higher satisfaction scores than those who say let me find someone. Source: National Retail Federation Customer Experience Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["staff", "helpfulness", "floor", "training"]
+    },
+    {
+      "id": "retail_002",
+      "industry": "Retail",
+      "issue_type": "staff_helpfulness",
+      "problem": "Staff product knowledge insufficient to help customers make purchase decisions",
+      "solution": "Run a 15-minute product knowledge session at the start of every shift covering the 3 newest products and the 3 most frequently asked about products. Create a staff-only product reference card for each category that fits in a pocket. Add a digital product lookup tool on a handheld device so staff can access specifications, stock levels, and related products instantly. Incentivise staff to try products themselves — first-hand experience produces authentically helpful recommendations.",
+      "impact": "Staff with strong product knowledge increase average transaction value by 20-25% through relevant upsell recommendations. Customers who receive a knowledgeable product recommendation have 40% higher satisfaction scores. Source: Retail Customer Experience Survey and Salesforce State of the Connected Customer.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["staff", "product-knowledge", "training", "upsell"]
+    },
+    {
+      "id": "retail_003",
+      "industry": "Retail",
+      "issue_type": "queue_wait_times",
+      "problem": "Long checkout queues causing customer frustration and basket abandonment",
+      "solution": "Monitor average queue length every 30 minutes during trading hours and open additional tills when queues reach 3 customers. Add a self-checkout option for customers with 5 items or fewer — this alone can reduce peak queue times by 30%. Train staff to spot customers with small baskets and offer to process them on the shop floor using a handheld payment device. Display estimated wait times above each till so customers can choose the fastest queue.",
+      "impact": "Every minute of unnecessary queue time reduces customer satisfaction by 10% and increases basket abandonment likelihood by 7%. Self-checkout for small baskets reduces average queue time by 25-35% during peak periods. Source: Retail Systems Research and British Retail Consortium Customer Experience Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["queue", "checkout", "wait-time", "self-checkout"]
+    },
+    {
+      "id": "retail_004",
+      "industry": "Retail",
+      "issue_type": "queue_wait_times",
+      "problem": "Click and collect orders taking too long to retrieve causing frustration",
+      "solution": "Dedicate a specific collection point separate from the main checkout queue with its own till. Send an SMS notification when the order is ready to collect — not just an email. Target a maximum 3-minute collection time from arrival to departure and measure it weekly. Pre-stage all online orders alphabetically or by order number so retrieval is instant. For orders not collected within 3 minutes, offer a discount on the next purchase as a goodwill gesture.",
+      "impact": "Click and collect customers who wait more than 5 minutes are 3x more likely to leave a negative review than in-store shoppers who wait the same time — expectation of speed is higher. A 3-minute maximum collection time increases click and collect satisfaction scores to match in-store satisfaction. Source: IMRG Click and Collect Consumer Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["click-and-collect", "queue", "online", "collection"]
+    },
+    {
+      "id": "retail_005",
+      "industry": "Retail",
+      "issue_type": "product_availability",
+      "problem": "Popular products frequently out of stock frustrating customers who make a special trip",
+      "solution": "Analyse your sales data to identify the 20 products that go out of stock most frequently and increase their reorder points. Add a low stock threshold alert so buying teams are notified when stock drops below a 2-week supply. Display real-time stock availability on your website and app so customers can check before visiting. For out-of-stock items, offer an in-store order with home delivery at no extra cost so the customer still makes a purchase.",
+      "impact": "Out-of-stock events cost retailers 4% of annual revenue on average through lost sales and customer defection. Displaying real-time stock online reduces wasted journeys by 35% and associated complaints. Source: McKinsey Retail Operations Research and ECR Europe Out-of-Stock Study.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["stock", "availability", "inventory", "online"]
+    },
+    {
+      "id": "retail_006",
+      "industry": "Retail",
+      "issue_type": "product_availability",
+      "problem": "Store layout making it difficult for customers to find products",
+      "solution": "Walk your store as a new customer once a month and time how long it takes to find your 10 best-selling products. If any take more than 90 seconds to locate, they are in the wrong place. Add clear overhead category signage visible from the entrance. Place your most purchased everyday items at the back of the store only if you have enough destination products to justify it — for smaller stores this frustrates more than it upsells. Add a store map near the entrance for larger stores.",
+      "impact": "Clear store navigation reduces customer frustration and increases the likelihood of a purchase by 20%. Products that are easy to find have 15% higher sell-through rates than identical products in hard-to-find locations. Source: Nielsen Store Layout Research and Retail Design Institute.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["layout", "navigation", "signage", "findability"]
+    },
+    {
+      "id": "retail_007",
+      "industry": "Retail",
+      "issue_type": "returns_policy",
+      "problem": "Returns process complicated or inconsistent causing customer frustration",
+      "solution": "Print your returns policy on the receipt in plain English in 3 bullet points — not legal language. Train every staff member on the returns policy so customers never get different answers from different people. For borderline cases, always err on the side of accepting the return — the goodwill generated is worth more than the item value in almost every case. Add an online returns initiation option so customers can register a return before coming to the store and have it processed in under 2 minutes on arrival.",
+      "impact": "Inconsistent returns experiences — different answers from different staff — are the number one cause of returns-related negative reviews. Retailers with generous and consistent returns policies see 20% higher repeat purchase rates. Source: Narvar Consumer Report and NRF Returns Policy Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["returns", "policy", "consistency", "staff-training"]
+    },
+    {
+      "id": "retail_008",
+      "industry": "Retail",
+      "issue_type": "pricing_clarity",
+      "problem": "Customers finding pricing unclear or discovering price discrepancies at checkout",
+      "solution": "Audit your store weekly for missing or incorrect price labels — a single missing price label creates doubt about all prices. Ensure promotional pricing is clearly dated showing when offers end. When a price discrepancy occurs between shelf and till, always honour the lower price and thank the customer for pointing it out. Add a price checker terminal on the shop floor so customers can self-serve price queries without waiting for staff.",
+      "impact": "Price discrepancies are cited in 35% of retail complaint reviews. Honouring the lower price in a discrepancy and thanking the customer converts a complaint moment into a loyalty moment — 70% of customers who experience this resolution return within 30 days. Source: Retail Customer Experience Magazine.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["pricing", "labels", "promotions", "accuracy"]
+    },
+    {
+      "id": "retail_009",
+      "industry": "Retail",
+      "issue_type": "loyalty_program",
+      "problem": "Loyalty program not being used or providing perceived value to customers",
+      "solution": "Simplify your loyalty programme to one clear mechanic — spend X get Y — that customers can explain to a friend in one sentence. Remove expiry dates on points or make them very long (2 years minimum) — expiring points are the biggest source of loyalty programme complaints. Add a surprise and delight element: give bonus points randomly on small purchases so customers feel the programme is generous. Show loyalty points balance on every receipt so the value is always visible.",
+      "impact": "Loyalty programmes with simple earn mechanics have 60% higher enrolment rates than complex tier systems. Removing point expiry increases active membership by 25-30% and reduces loyalty-related complaints by 40%. Source: Bond Brand Loyalty Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["loyalty", "programme", "points", "retention"]
+    },
+    {
+      "id": "retail_010",
+      "industry": "Retail",
+      "issue_type": "store_cleanliness",
+      "problem": "Store cleanliness and presentation standards generating customer complaints",
+      "solution": "Implement a store walk checklist completed every 2 hours covering: clear aisle paths, fully stocked shelves with no gaps, clean fitting rooms after every use, clean customer toilets checked every hour, and tidy checkout areas. Make the fitting room experience premium — good lighting, enough hooks, a bell to call for assistance, and prompt response to that bell. Clean window displays weekly as they set the first impression before a customer enters.",
+      "impact": "Store cleanliness is the second most cited factor in retail customer satisfaction reviews after staff helpfulness. Fitting room cleanliness and lighting specifically influence purchase decisions for 65% of clothing retail customers. Source: Retail Customer Experience Survey and Kantar Retail Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["cleanliness", "presentation", "store", "fitting-rooms"]
+    },
+    {
+      "id": "retail_011",
+      "industry": "Retail",
+      "issue_type": "staff_helpfulness",
+      "problem": "Customers feeling pressured by overly aggressive sales staff",
+      "solution": "Train staff on consultative selling — ask one question about what the customer is looking for before making any recommendation. Establish a clear rule: one offer of assistance per customer, then respect their space unless they signal they want help. Remove sales commission structures that incentivise pushing specific products if they are creating pressure complaints. Reward staff instead on customer satisfaction scores and return visit rates.",
+      "impact": "Customers who feel pressured have a 90% chance of leaving negative reviews and a near-zero chance of returning. Consultative selling training increases both satisfaction scores and average transaction value by removing the resistance created by pressure. Source: McKinsey Retail Customer Experience Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["staff", "sales", "pressure", "consultative-selling"]
+    },
+    {
+      "id": "retail_012",
+      "industry": "Retail",
+      "issue_type": "pricing_clarity",
+      "problem": "Promotional offers and discount mechanics confusing or misleading to customers",
+      "solution": "Test every promotional message with 5 customers before launching it — if more than one cannot explain what the offer is in their own words, rewrite it. Show the original price and the promotional price side by side with the saving clearly calculated. For multi-buy promotions, show the per-unit saving prominently. Never use was and now pricing unless the was price was genuinely charged for a significant period — misleading reference prices generate regulatory complaints in addition to customer complaints.",
+      "impact": "Clear promotional mechanics increase promotion uptake by 20-30% compared to confusing mechanics. Misleading pricing complaints are among the most likely to escalate to public reviews and regulatory bodies. Source: Advertising Standards Authority Pricing Research and NRF Promotions Study.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["promotions", "pricing", "clarity", "offers"]
+    }
+  ]

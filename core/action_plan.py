@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import re
 import json
-from typing import List, Optional, Literal
+from typing import List, Dict, Optional, Literal
 from pydantic import BaseModel, Field
 
 import google.generativeai as genai
@@ -16,6 +16,8 @@ from groq import Groq
 
 from config import GROQ_API_KEY, GROQ_MODEL, GEMINI_API_KEY, GEMINI_MODEL
 from .classifier import is_rate_limit_error
+from core.rag.knowledge_base import retrieve_relevant_solutions, build_retrieval_query
+from core.logger import logger
 
 
 _groq_client = Groq(api_key=GROQ_API_KEY)
@@ -150,7 +152,9 @@ def _format_company_context(profile: dict) -> str:
 
 # ─── Prompt builder ────────────────────────────────────────────────────────────
 
-def build_action_plan_prompts(dashboard_data: dict, profile: dict) -> dict:
+def build_action_plan_prompts(dashboard_data: dict, profile: dict, rag_context: List[Dict] = None) -> dict:
+    if rag_context is None:
+        rag_context = []
     health_score, health_label = compute_health_score(dashboard_data)
 
     sentiment = dashboard_data["sentiment"]
@@ -186,6 +190,27 @@ def build_action_plan_prompts(dashboard_data: dict, profile: dict) -> dict:
     top_issues_block = _format_top_issues_block(dashboard_data["top_issues"])
     emotions_block = _format_emotions_block(dashboard_data["emotions"])
     company_context_block = _format_company_context(profile)
+
+    rag_section = ""
+    if rag_context:
+        solution_lines = []
+        for i, doc in enumerate(rag_context, 1):
+            relevance_pct = round(doc.get("relevance_score", 0) * 100)
+            timeframe = doc.get("timeframe", "short_term").replace("_", " ")
+            solution_lines.append(
+                f"Solution {i} (relevance: {relevance_pct}%):\n"
+                f"Problem pattern: {doc.get('problem', '')}\n"
+                f"Proven approach: {doc.get('solution', '')}\n"
+                f"Expected impact: {doc.get('impact', '')}\n"
+                f"Effort: {doc.get('effort', '')} | Timeframe: {timeframe}"
+            )
+        rag_section = (
+            "\n\nPROVEN SOLUTIONS FROM SIMILAR BUSINESSES\n"
+            "Reference these specific strategies in your recommendations where relevant:\n\n"
+            + "\n\n".join(solution_lines)
+            + "\n\nYour recommendations MUST reference the proven approaches above where relevant. "
+            "Cite specific tactics not generic advice."
+        )
 
     data_quality_warning = ""
     if low_conf_pct > 25:
@@ -261,7 +286,7 @@ FEEDBACK CATEGORIES (sorted by volume)
 {categories_block}
 
 TOP NEGATIVE ISSUE AREAS (with example customer quotes — use these in your recommendations)
-{top_issues_block}
+{top_issues_block}{rag_section}
 
 WHAT CUSTOMERS ARE FEELING:
 {emotions_block}
@@ -378,7 +403,20 @@ def generate_action_plan(dashboard_data: dict, profile: dict) -> dict:
     }
 
     try:
-        prompts = build_action_plan_prompts(dashboard_data, profile)
+        rag_context = []
+        try:
+            emotions = dashboard_data.get("emotions", [])
+            dominant_emotion = emotions[0]["emotion"] if emotions else "neutral"
+            top_issues = dashboard_data.get("top_issues", [])
+            industry = profile.get("industry", "General")
+            rag_query = build_retrieval_query(top_issues, industry, dominant_emotion)
+            rag_context = retrieve_relevant_solutions(rag_query, industry, n_results=5)
+            logger.info(f"RAG retrieved {len(rag_context)} documents")
+        except Exception as rag_err:
+            rag_context = []
+            logger.warning(f"RAG retrieval failed (non-fatal): {rag_err}")
+
+        prompts = build_action_plan_prompts(dashboard_data, profile, rag_context)
         system_prompt = prompts["system"]
         user_prompt = prompts["user"]
 

@@ -1,0 +1,222 @@
+[
+    {
+      "id": "ecom_001",
+      "industry": "E-commerce",
+      "issue_type": "delivery_speed",
+      "problem": "Customers complaining about slow delivery and lack of tracking updates",
+      "solution": "Implement proactive shipping notifications at every stage: order confirmed, dispatched, out for delivery, delivered. Use your courier's webhook API to trigger automated SMS and email updates. Add a self-service order tracking page so customers never need to contact support to find their package.",
+      "impact": "Businesses implementing proactive tracking notifications see 40-60% reduction in where-is-my-order support tickets within 30 days and measurable increase in repeat purchase rate. Source: Metapack Delivery Consumer Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["delivery", "tracking", "notifications", "logistics"]
+    },
+    {
+      "id": "ecom_002",
+      "industry": "E-commerce",
+      "issue_type": "delivery_speed",
+      "problem": "Orders arriving late with no communication to the customer",
+      "solution": "Set realistic delivery windows at checkout and always underpromise and overdeliver. If a delay occurs, proactively notify the customer before they notice, apologise specifically, and offer a concrete resolution such as a discount on next order. Silence after a problem is the primary driver of critical reviews, not the problem itself.",
+      "impact": "Proactive delay communication reduces negative review rates by 35% even when the delay cannot be prevented. Customers who receive a proactive apology are 4x more likely to purchase again. Source: Zendesk Customer Experience Trends Report.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["delivery", "communication", "delay", "proactive"]
+    },
+    {
+      "id": "ecom_003",
+      "industry": "E-commerce",
+      "issue_type": "delivery_speed",
+      "problem": "Wrong items being sent to customers causing complaints and returns",
+      "solution": "Implement barcode scan verification at the packing stage — every item scanned against the order before the box is sealed. Reorganise your warehouse so similar-looking products are stored at least two shelves apart. Add a photo of the correct item to each pick list so staff can visually verify before packing.",
+      "impact": "Barcode scan verification at packing reduces wrong-item errors by 85-95%. The cost of the scanning system is typically recovered within the first month from reduced replacement shipping and refund costs. Source: Shopify Fulfilment Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["fulfilment", "accuracy", "warehouse", "picking"]
+    },
+    {
+      "id": "ecom_004",
+      "industry": "E-commerce",
+      "issue_type": "delivery_speed",
+      "problem": "Delivery costs perceived as too high causing checkout abandonment",
+      "solution": "Calculate your average order value and set a free shipping threshold slightly above it. Display the free shipping threshold prominently throughout the shopping experience with messages like spend five more for free shipping. Consider building shipping costs into product prices and advertising free shipping always — this consistently outperforms showing low prices with added shipping fees.",
+      "impact": "Free shipping thresholds increase average order value by 15-20% while reducing shipping cost complaints. Free shipping is the number one purchase incentive for online shoppers across all demographics. Source: Baymard Institute E-commerce Checkout Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["shipping", "pricing", "free-shipping", "conversion"]
+    },
+    {
+      "id": "ecom_005",
+      "industry": "E-commerce",
+      "issue_type": "customer_support",
+      "problem": "Customer support taking too long to respond to complaints",
+      "solution": "Implement a three-tier triage system. Tier 1: auto-acknowledge every ticket within 5 minutes with a specific case number and realistic resolution timeline. Tier 2: first human response within 2 hours for critical issues such as wrong item or missing order, and 24 hours for general queries. Tier 3: escalation path for unresolved issues after 48 hours with a senior handler.",
+      "impact": "Three-tier triage systems consistently reduce average first response time from days to hours. Customer satisfaction scores for resolved tickets increase significantly when resolution time is under 4 hours. Source: Zendesk Benchmark Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["support", "response-time", "triage", "tickets"]
+    },
+    {
+      "id": "ecom_006",
+      "industry": "E-commerce",
+      "issue_type": "customer_support",
+      "problem": "Return and refund process slow or complicated causing frustration",
+      "solution": "Create a self-service returns portal where customers initiate a return in three clicks without contacting support. Include a pre-printed return label in every order or email it instantly on request. Process refunds to the original payment method within 24 hours of receiving the return — faster refunds generate more positive reviews than almost any other single intervention.",
+      "impact": "Self-service returns reduce support contact rate by 40-60% for return-related queries. Brands with hassle-free returns see 92% of customers willing to purchase again even after a return. Source: Narvar Consumer Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["returns", "refunds", "support", "self-service"]
+    },
+    {
+      "id": "ecom_007",
+      "industry": "E-commerce",
+      "issue_type": "customer_support",
+      "problem": "Customers frustrated by impersonal or scripted support responses",
+      "solution": "Train support staff to use the customer's name, reference their specific order details, and acknowledge the specific problem described before offering a solution. Eliminate copy-paste responses that start with Dear Valued Customer. Add a brief personal sign-off with the agent's first name. For high-value orders, follow up 48 hours after resolution to confirm satisfaction.",
+      "impact": "Personalised support interactions have 3x higher satisfaction ratings than scripted responses. Follow-up messages convert dissatisfied customers into brand advocates at a 28% rate. Source: Harvard Business Review Service Recovery Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["support", "personalisation", "customer-experience"]
+    },
+    {
+      "id": "ecom_008",
+      "industry": "E-commerce",
+      "issue_type": "product_quality",
+      "problem": "Products not matching photos or descriptions online leading to disappointment",
+      "solution": "Audit your 20 highest-complaint products and update their photography to show actual product size, texture, and colour accurately. Add a measurements section to every product description. Include at least one photo showing the product in use or next to a common object for scale. For clothing or accessories add a size guide with real measurements not just S M L.",
+      "impact": "Accurate product photography and descriptions reduce return rates by 25-40% and dramatically reduce quality-related negative reviews within 60 days of implementation. Source: Baymard Institute Product Page UX Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["product", "quality", "photography", "descriptions", "returns"]
+    },
+    {
+      "id": "ecom_009",
+      "industry": "E-commerce",
+      "issue_type": "product_quality",
+      "problem": "Damaged products arriving to customers due to poor packaging",
+      "solution": "Conduct a packaging audit by photographing your most commonly damaged product categories after a simulated drop test. Switch to double-wall corrugated boxes for fragile items. Add void fill not just a single layer of bubble wrap. Mark packages containing fragile items clearly on all six sides. Review your courier handling agreement — some couriers have significantly higher damage rates.",
+      "impact": "Packaging improvements typically reduce damage-related complaints by 50-70% within 30 days. The cost of better packaging is almost always less than the cost of replacements, refunds, and negative reviews combined. Source: Packaging Digest Industry Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["product", "packaging", "damage", "logistics"]
+    },
+    {
+      "id": "ecom_010",
+      "industry": "E-commerce",
+      "issue_type": "pricing",
+      "problem": "Customers feeling surprised by unexpected fees appearing at checkout",
+      "solution": "Display the total price including all fees, shipping, and taxes on the product page before customers add to cart. Never reveal fees for the first time at checkout — this is the single biggest cause of cart abandonment. If you offer discounts, test every coupon code before sending it to customers. Add a price breakdown tooltip on the cart page showing exactly where every charge comes from.",
+      "impact": "Transparent upfront pricing reduces checkout abandonment by 15-25% and virtually eliminates hidden fees complaints. Source: Baymard Institute Cart Abandonment Research which studied 44 major e-commerce sites.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["pricing", "transparency", "checkout", "fees"]
+    },
+    {
+      "id": "ecom_011",
+      "industry": "E-commerce",
+      "issue_type": "pricing",
+      "problem": "Discount codes and promotional offers not working at checkout",
+      "solution": "Create a QA checklist for every promotional campaign: test the code on three different browsers and two different devices before sending. Set clear expiry dates and communicate them prominently. When a code fails, have a support shortcut that manually applies the discount within 10 minutes — recovering a failed promotion turns a frustrated customer into a loyal one.",
+      "impact": "Fixing broken promotions eliminates one of the highest-volume complaint categories with near-zero cost. Customers whose failed codes are manually honoured by support have a 68% higher repeat purchase rate. Source: Klaviyo E-commerce Marketing Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["pricing", "discounts", "promotions", "checkout"]
+    },
+    {
+      "id": "ecom_012",
+      "industry": "E-commerce",
+      "issue_type": "general_experience",
+      "problem": "Website slow to load especially during high-traffic sales events",
+      "solution": "Run a Google PageSpeed Insights test on your homepage and three highest-traffic product pages. Common quick wins: compress all images to WebP format, enable browser caching, remove unused JavaScript plugins. For sales events specifically, notify your hosting provider 48 hours in advance to provision additional capacity. Use a CDN such as Cloudflare free tier to serve static assets faster globally.",
+      "impact": "A one-second improvement in page load time increases conversion rates by 7% on average. Slow load complaints typically drop 60-80% after image compression and CDN implementation alone. Source: Google Web Performance Research and Think with Google.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["website", "performance", "loading-speed", "technical"]
+    },
+    {
+      "id": "ecom_013",
+      "industry": "E-commerce",
+      "issue_type": "general_experience",
+      "problem": "Search feature returning irrelevant or poor quality results",
+      "solution": "Review your 50 most common search queries and manually check if the top results are relevant. Add synonyms for your most searched terms so that trainers returns the same results as sneakers. Implement search analytics to see what customers search for and find nothing — these are your product gaps. Pin your best-selling products for common search terms.",
+      "impact": "Customers who use search convert at 2-3x the rate of those who browse. Search relevance improvements directly increase add-to-cart rates making it one of the highest ROI improvements for e-commerce. Source: Econsultancy Site Search Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["website", "search", "user-experience", "conversion"]
+    },
+    {
+      "id": "ecom_014",
+      "industry": "E-commerce",
+      "issue_type": "general_experience",
+      "problem": "Products frequently out of stock causing customer frustration and lost sales",
+      "solution": "Implement a back-in-stock email notification system — this converts frustrated customers into future buyers instead of losing them to competitors. Review your reorder points for your top 20 best-sellers and increase safety stock by 20-30%. Add a low stock warning showing only 3 left on product pages to create urgency and encourage faster purchase decisions.",
+      "impact": "Back-in-stock notifications have open rates of 60-80% and conversion rates of 20-30% — far higher than standard marketing emails. Source: Klaviyo Email Marketing Benchmark Report.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["inventory", "stock", "availability", "notifications"]
+    },
+    {
+      "id": "ecom_015",
+      "industry": "E-commerce",
+      "issue_type": "general_experience",
+      "problem": "Checkout process too complicated with too many steps causing abandonment",
+      "solution": "Count the number of clicks from add to cart to order confirmed. Industry best practice is 3-5 steps maximum. Enable guest checkout — forcing account creation before purchase increases abandonment by 35%. Save customer details for returning customers so they never re-enter address and payment information. Add a progress indicator so customers know how many steps remain.",
+      "impact": "Streamlined checkout reduces cart abandonment by 20-35%. Guest checkout alone recovers 35% of customers who would otherwise abandon. Each unnecessary checkout step costs approximately 10% in conversion rate. Source: Baymard Institute Checkout Usability Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["checkout", "conversion", "user-experience", "cart-abandonment"]
+    },
+    {
+      "id": "ecom_016",
+      "industry": "E-commerce",
+      "issue_type": "general_experience",
+      "problem": "Mobile shopping experience poor or frustrating for customers",
+      "solution": "Test your entire checkout flow on an actual mobile device not just a desktop browser in mobile view. Common mobile issues: buttons too small to tap, checkout form fields not triggering the right keyboard, payment requiring too many steps. Enable Apple Pay and Google Pay which reduce mobile checkout from 8+ steps to 2. Ensure product images load quickly on mobile networks.",
+      "impact": "Mobile accounts for 60-70% of e-commerce traffic. A seamless mobile checkout increases mobile conversion rates by 30-50% and directly reduces frustration complaints from mobile users. Source: Salesforce State of the Connected Customer Report.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["mobile", "checkout", "user-experience", "conversion"]
+    },
+    {
+      "id": "ecom_017",
+      "industry": "E-commerce",
+      "issue_type": "general_experience",
+      "problem": "Customers not receiving order confirmation or shipping notification emails",
+      "solution": "Audit your transactional email deliverability — check your spam score, verify your SPF and DKIM DNS records, and send a test order through your system to confirm all emails arrive in inbox not spam. Add SMS as a backup notification channel since SMS open rates are 98% versus 20% for email. Review your email templates on mobile as 60% of transactional emails are read on mobile devices.",
+      "impact": "Fixing transactional email deliverability eliminates a significant portion of where-is-my-order contacts instantly. Customers who receive timely order updates have 25% fewer support contacts. Source: Klaviyo Transactional Email Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["email", "notifications", "deliverability", "communication"]
+    },
+    {
+      "id": "ecom_018",
+      "industry": "E-commerce",
+      "issue_type": "product_quality",
+      "problem": "High return rates due to size or fit issues for clothing and accessories",
+      "solution": "Add a detailed size guide with actual measurements in centimetres and inches to every size-dependent product. Include a how this fits section written from real customer feedback such as customers say this runs small, we recommend sizing up. Allow customers to filter reviews by size purchased to help future buyers make informed decisions.",
+      "impact": "Detailed size guidance reduces size-related returns by 20-35%. User-generated size feedback is trusted significantly more than brand size charts and reduces pre-purchase hesitation. Source: ASOS Size Guide Research and Narvar Returns Report.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["product", "sizing", "returns", "descriptions"]
+    },
+    {
+      "id": "ecom_019",
+      "industry": "E-commerce",
+      "issue_type": "pricing",
+      "problem": "Products perceived as overpriced relative to quality received",
+      "solution": "Rather than lowering prices, increase perceived value at the same price point. Add value-adds that cost little but matter to customers: free gift wrapping, a handwritten thank-you note, a loyalty points bonus. Improve product photography and copy to better communicate quality. If your products are genuinely premium-priced, clearly explain why through materials, craftsmanship, or sustainability story.",
+      "impact": "Adding perceived value without changing price is more profitable than discounting. Brands that clearly communicate why they charge a premium see higher customer lifetime value and lower return rates. Source: McKinsey Consumer Value Research.",
+      "effort": "low",
+      "timeframe": "immediate",
+      "tags": ["pricing", "value", "perception", "positioning"]
+    },
+    {
+      "id": "ecom_020",
+      "industry": "E-commerce",
+      "issue_type": "general_experience",
+      "problem": "Customers struggling to find products or navigate the website effectively",
+      "solution": "Implement a clear navigation hierarchy with no more than 3 levels deep. Add breadcrumb navigation so customers always know where they are. Create curated collection pages for your most popular use cases such as gifts under 30 or new arrivals this week. Ensure your homepage prominently features your top 3-5 categories. Add a customers also bought section to reduce dead-end browsing.",
+      "impact": "Improved navigation reduces bounce rates and increases pages-per-session. Customers who view 3 or more product pages convert at 4x the rate of single-page visitors. Source: Nielsen Norman Group E-commerce UX Research.",
+      "effort": "medium",
+      "timeframe": "short_term",
+      "tags": ["navigation", "user-experience", "discovery", "conversion"]
+    }
+  ]

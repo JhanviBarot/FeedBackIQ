@@ -13,6 +13,7 @@ DOCUMENTS_DIR = os.path.join(
     os.path.dirname(_THIS_FILE), "documents")
 CHROMA_DIR = os.path.join(_PROJECT_ROOT, "data", "chroma")
 COLLECTION_NAME = "feedbackiq_knowledge"
+RELEVANCE_THRESHOLD = 0.45
 
 _client = None
 _collection = None
@@ -152,7 +153,8 @@ def retrieve_relevant_solutions(
                 1 - results["distances"][0][i], 3)
         })
 
-    return retrieved
+    return [doc for doc in retrieved
+            if doc["relevance_score"] >= RELEVANCE_THRESHOLD]
 
 
 def build_retrieval_query(
@@ -202,8 +204,14 @@ def retrieve_per_issue(
         )
 
         try:
-            docs = retrieve_relevant_solutions(
+            raw_docs = retrieve_relevant_solutions(
                 query, industry, n_results=n_per_issue)
+            docs = [d for d in raw_docs
+                    if d["relevance_score"] >= RELEVANCE_THRESHOLD]
+            if not docs:
+                logger.info(
+                    f"{category}: no doc above threshold, "
+                    f"LLM will use data only")
             results[category] = docs
         except Exception as e:
             logger.warning(

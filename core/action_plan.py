@@ -217,9 +217,11 @@ def build_action_plan_prompts(dashboard_data: dict, profile: dict, rag_context: 
             rag_section = (
                 "\n\nPROVEN SOLUTIONS — MATCHED TO EACH ISSUE AREA\n\n"
                 + "\n\n".join(category_blocks)
-                + "\n\nMATCHING RULE: When writing each recommendation, use only the proven solutions "
-                "listed under that specific category above. Do not mix solutions across categories. "
-                "If no solution is listed for a category, generate based on the data alone."
+                + "\n\nMATCHING RULE: For each recommendation, use the proven solutions listed under "
+                "that exact category above. Do not mix solutions across categories. If a category "
+                "has no proven solutions listed, generate that recommendation from the customer "
+                "data alone — be specific to what the customers actually said, and do not invent "
+                "generic advice or borrow solutions from unrelated categories."
             )
 
     data_quality_warning = ""

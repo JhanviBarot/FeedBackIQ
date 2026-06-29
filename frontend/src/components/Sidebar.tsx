@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { X, LayoutDashboard, PlusCircle, Settings, HelpCircle } from 'lucide-react';
+import DocsModal from './DocsModal';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -8,6 +10,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
+  const [docsOpen, setDocsOpen] = useState(false);
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -70,7 +73,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 Check our documentation or contact support.
               </p>
               <button
-                onClick={() => window.open('http://localhost:8000/api-docs', '_blank')}
+                onClick={() => setDocsOpen(true)}
                 className="w-full text-sm text-primary font-medium hover:underline"
               >
                 View Docs
@@ -79,6 +82,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
         </div>
       </aside>
+
+      {docsOpen && <DocsModal onClose={() => setDocsOpen(false)} />}
     </>
   );
 }

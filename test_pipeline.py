@@ -2098,21 +2098,21 @@ _mock_profile25l = {
 }
 with _patch25("core.action_plan.retrieve_relevant_solutions", side_effect=Exception("RAG down")):
     try:
-        _prompts25l = _bapp25(_mock_dash25l, _mock_profile25l, [])
+        _prompts25l = _bapp25(_mock_dash25l, _mock_profile25l, {})
         check("system" in _prompts25l and "user" in _prompts25l,
               "25l: build_action_plan_prompts returns system+user dict even when RAG context is empty")
     except Exception as _e25l:
         check(False, f"25l: build_action_plan_prompts raised unexpectedly: {_e25l}")
 
 # 25m — when rag_context is provided, PROVEN SOLUTIONS appears in user prompt
-_mock_rag25m = [{
+_mock_rag25m = {"Delivery Speed": [{
     "problem": "Slow delivery tracking",
     "solution": "Send SMS at every delivery stage",
     "impact": "40% fewer complaints",
     "effort": "medium",
     "timeframe": "short_term",
     "relevance_score": 0.92,
-}]
+}]}
 _prompts25m = _bapp25(_mock_dash25l, _mock_profile25l, _mock_rag25m)
 check("PROVEN SOLUTIONS" in _prompts25m["user"],
       "25m: PROVEN SOLUTIONS appears in user prompt when rag_context is provided")

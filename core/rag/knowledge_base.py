@@ -175,3 +175,39 @@ def build_retrieval_query(
         f"Customer emotion: {dominant_emotion}\n"
         f"Issues:\n" + "\n".join(issue_parts)
     )
+
+
+def retrieve_per_issue(
+    top_issues: List[Dict],
+    industry: str,
+    n_per_issue: int = 2
+) -> Dict[str, List[Dict]]:
+    """
+    Retrieve relevant documents separately for each issue.
+    Returns a dict mapping category name to its retrieved docs.
+    This ensures each recommendation gets docs specific to
+    its own problem not a mix of all problems combined.
+    """
+    results = {}
+    for issue in top_issues[:5]:
+        category = issue.get("category", "")
+        example = issue.get("example", "")
+        critical = issue.get("critical_count", 0)
+        urgency = "critical" if critical > 0 else "medium"
+
+        query = (
+            f"Industry: {industry}\n"
+            f"Problem: {category} - {example}\n"
+            f"Tags: {category.lower()}"
+        )
+
+        try:
+            docs = retrieve_relevant_solutions(
+                query, industry, n_results=n_per_issue)
+            results[category] = docs
+        except Exception as e:
+            logger.warning(
+                f"RAG retrieval failed for {category}: {e}")
+            results[category] = []
+
+    return results

@@ -16,7 +16,7 @@ from groq import Groq
 
 from config import GROQ_API_KEY, GROQ_MODEL, GEMINI_API_KEY, GEMINI_MODEL
 from .classifier import is_rate_limit_error
-from core.rag.knowledge_base import retrieve_relevant_solutions, build_retrieval_query
+from core.rag.knowledge_base import retrieve_relevant_solutions, build_retrieval_query, retrieve_per_issue
 from core.logger import logger
 
 
@@ -152,9 +152,9 @@ def _format_company_context(profile: dict) -> str:
 
 # ─── Prompt builder ────────────────────────────────────────────────────────────
 
-def build_action_plan_prompts(dashboard_data: dict, profile: dict, rag_context: List[Dict] = None) -> dict:
+def build_action_plan_prompts(dashboard_data: dict, profile: dict, rag_context: Dict[str, List[Dict]] = None) -> dict:
     if rag_context is None:
-        rag_context = []
+        rag_context = {}
     health_score, health_label = compute_health_score(dashboard_data)
 
     sentiment = dashboard_data["sentiment"]
@@ -193,24 +193,34 @@ def build_action_plan_prompts(dashboard_data: dict, profile: dict, rag_context: 
 
     rag_section = ""
     if rag_context:
-        solution_lines = []
-        for i, doc in enumerate(rag_context, 1):
-            relevance_pct = round(doc.get("relevance_score", 0) * 100)
-            timeframe = doc.get("timeframe", "short_term").replace("_", " ")
-            solution_lines.append(
-                f"Solution {i} (relevance: {relevance_pct}%):\n"
-                f"Problem pattern: {doc.get('problem', '')}\n"
-                f"Proven approach: {doc.get('solution', '')}\n"
-                f"Expected impact: {doc.get('impact', '')}\n"
-                f"Effort: {doc.get('effort', '')} | Timeframe: {timeframe}"
+        category_blocks = []
+        for category, docs in rag_context.items():
+            if not docs:
+                continue
+            doc_lines = []
+            for i, doc in enumerate(docs, 1):
+                relevance_pct = round(doc.get("relevance_score", 0) * 100)
+                timeframe = doc.get("timeframe", "short_term").replace("_", " ")
+                doc_lines.append(
+                    f"  Solution {i} (relevance: {relevance_pct}%):\n"
+                    f"  Problem: {doc.get('problem', '')}\n"
+                    f"  Proven approach: {doc.get('solution', '')}\n"
+                    f"  Impact: {doc.get('impact', '')}\n"
+                    f"  Effort: {doc.get('effort', '')} | Timeframe: {timeframe}"
+                )
+            if doc_lines:
+                category_blocks.append(
+                    f"For {category.upper()} complaints:\n"
+                    + "\n\n".join(doc_lines)
+                )
+        if category_blocks:
+            rag_section = (
+                "\n\nPROVEN SOLUTIONS — MATCHED TO EACH ISSUE AREA\n\n"
+                + "\n\n".join(category_blocks)
+                + "\n\nMATCHING RULE: When writing each recommendation, use only the proven solutions "
+                "listed under that specific category above. Do not mix solutions across categories. "
+                "If no solution is listed for a category, generate based on the data alone."
             )
-        rag_section = (
-            "\n\nPROVEN SOLUTIONS FROM SIMILAR BUSINESSES\n"
-            "Reference these specific strategies in your recommendations where relevant:\n\n"
-            + "\n\n".join(solution_lines)
-            + "\n\nYour recommendations MUST reference the proven approaches above where relevant. "
-            "Cite specific tactics not generic advice."
-        )
 
     data_quality_warning = ""
     if low_conf_pct > 25:
@@ -403,20 +413,23 @@ def generate_action_plan(dashboard_data: dict, profile: dict) -> dict:
     }
 
     try:
-        rag_context = []
-        try:
-            emotions = dashboard_data.get("emotions", [])
-            dominant_emotion = emotions[0]["emotion"] if emotions else "neutral"
-            top_issues = dashboard_data.get("top_issues", [])
-            industry = profile.get("industry", "General")
-            rag_query = build_retrieval_query(top_issues, industry, dominant_emotion)
-            rag_context = retrieve_relevant_solutions(rag_query, industry, n_results=5)
-            logger.info(f"RAG retrieved {len(rag_context)} documents")
-        except Exception as rag_err:
-            rag_context = []
-            logger.warning(f"RAG retrieval failed (non-fatal): {rag_err}")
+        top_issues = dashboard_data.get("top_issues", [])
+        industry = profile.get("industry", "General")
 
-        prompts = build_action_plan_prompts(dashboard_data, profile, rag_context)
+        rag_context_per_issue = {}
+        try:
+            rag_context_per_issue = retrieve_per_issue(
+                top_issues, industry, n_per_issue=2)
+            total = sum(len(v) for v in
+                        rag_context_per_issue.values())
+            logger.info(
+                f"RAG per-issue retrieval: {total} docs "
+                f"across {len(rag_context_per_issue)} issues")
+        except Exception as e:
+            logger.warning(f"RAG per-issue failed: {e}")
+            rag_context_per_issue = {}
+
+        prompts = build_action_plan_prompts(dashboard_data, profile, rag_context_per_issue)
         system_prompt = prompts["system"]
         user_prompt = prompts["user"]
 

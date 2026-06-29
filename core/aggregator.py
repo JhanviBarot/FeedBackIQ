@@ -109,6 +109,7 @@ def compute_top_issues(df: pd.DataFrame, top_n: int = 5) -> list:
             count=("Primary Category", "count"),
             critical_count=("Urgency", lambda x: (x == "critical").sum()),
             example=("Core Issue", "first"),
+            example_list=("Core Issue", lambda x: list(x)[:3]),
         )
         .reset_index()
         .rename(columns={"Primary Category": "category"})
@@ -125,7 +126,10 @@ def compute_top_issues(df: pd.DataFrame, top_n: int = 5) -> list:
             "category": row["category"],
             "count": int(row["count"]),
             "critical_count": int(row["critical_count"]),
+            # `example` stays a string for backward compatibility (PDF, frontend).
+            # `example_list` is additive: up to 3 distinct complaints for richer RAG retrieval.
             "example": row["example"],
+            "example_list": list(row["example_list"]),
         }
         for _, row in top.iterrows()
     ]

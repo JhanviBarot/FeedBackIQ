@@ -197,10 +197,22 @@ def retrieve_per_issue(
         critical = issue.get("critical_count", 0)
         urgency = "critical" if critical > 0 else "medium"
 
+        # The customer's own words carry the real semantic signal — a vague
+        # category like "General Experience" matches poorly, but the actual
+        # complaint ("website loads slowly") matches the right document.
+        # Use up to 3 example complaints when the aggregator provides them.
+        example_list = issue.get("example_list") or (
+            [example] if example else [])
+        complaint_text = " | ".join(
+            str(e) for e in example_list if e) or example
+
+        # Lead with the complaint content (embedding weights earlier text more),
+        # then add category, urgency, and industry as supporting context.
         query = (
-            f"Industry: {industry}\n"
-            f"Problem: {category} - {example}\n"
-            f"Tags: {category.lower()}"
+            f"Problem: {complaint_text}\n"
+            f"Category: {category}\n"
+            f"Urgency: {urgency}\n"
+            f"Industry: {industry}"
         )
 
         try:

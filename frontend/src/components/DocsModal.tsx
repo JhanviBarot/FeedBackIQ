@@ -94,22 +94,16 @@ function HowItWorksTab() {
       <P>Here is what happens when you upload reviews:</P>
       <div style={{ marginTop: '24px' }}>
         <Step number={1} title="We read every review and clean it up">
-          Duplicates are removed, very short or nonsensical entries are filtered out, and the text is
-          prepared for analysis. You see the count of reviews that made it through this stage.
+          We read every review and remove duplicates and noise automatically.
         </Step>
         <Step number={2} title="Each review is classified across 7 dimensions">
-          Overall feeling (positive, negative, or neutral) — which area of your business it is about
-          (your custom categories) — how urgent the issue is — what emotion the customer is expressing
-          — whether the review touches on multiple issues — a one-line summary of the core problem —
-          and how confident the system is in the classification.
+          Each review is classified across 7 dimensions: overall sentiment (positive, negative, or neutral), which category of your business it relates to, urgency level, customer emotion, whether it covers multiple issues, a one-line core issue summary, and classification confidence.
         </Step>
         <Step number={3} title="Everything is aggregated into your dashboard">
-          Counts, percentages, and charts that surface patterns across all your reviews at once. Instead
-          of reading 200 reviews yourself, you see the headline findings in seconds.
+          We aggregate everything into your dashboard — counts, percentages, and charts that surface patterns across all reviews instantly.
         </Step>
         <Step number={4} title="The AI Action Plan analyses the patterns">
-          It reads the aggregated statistics and writes specific, ranked recommendations for your
-          business — based on what your customers are actually saying, not generic advice.
+          The AI Action Plan analyses these patterns and writes specific recommendations based on what your customers are actually saying.
         </Step>
       </div>
     </div>
@@ -119,48 +113,34 @@ function HowItWorksTab() {
 function DashboardTab() {
   return (
     <div>
-      <P>Here is what each number and chart on your dashboard means.</P>
+      <P>Your dashboard turns raw review data into clear numbers and charts. Here is exactly what each element means and how to act on it.</P>
 
       <Heading>Overview Cards</Heading>
       <MetricRow label="Total Reviews">
-        How many reviews were successfully analysed in this run. Reviews that were too short, duplicated,
-        or unreadable are not counted.
+        The number of reviews successfully analysed in this run. Duplicates and noise are removed automatically before counting.
       </MetricRow>
       <MetricRow label="Sentiment Score">
-        A number from 0 to 100 representing your overall customer sentiment. Above 75 is strong.
-        50 to 74 is mixed — room for improvement. Below 50 means more customers are unhappy than happy
-        and needs immediate attention.
+        A score from 0 to 100 representing overall customer sentiment. Above 75 is strong. 50 to 74 is mixed with room for improvement. Below 50 means more customers are unhappy than happy and needs immediate attention.
       </MetricRow>
       <MetricRow label="Positive Sentiment %">
-        The percentage of reviews that expressed satisfaction. Higher is better. Compare this number
-        across different analysis runs to see if you are improving.
+        The percentage of reviews that expressed overall satisfaction. Track this across multiple analyses to see if your improvements are working.
       </MetricRow>
       <MetricRow label="Critical Issues">
-        Reviews where customers expressed urgent, serious problems — things like receiving the wrong
-        product, complete failure of service, or angry complaints. Even one critical issue deserves
-        same-day attention.
+        Reviews where customers expressed urgent, serious problems. Even one critical issue deserves same-day attention — these customers are most likely to leave public negative reviews.
       </MetricRow>
 
       <Heading>Charts</Heading>
       <MetricRow label="Feedback by Category">
-        Shows which areas of your business customers mention most. A tall bar does not mean a problem
-        — it means that area generates the most feedback, positive or negative. Look at the Urgency
-        Heatmap to understand whether the volume is driven by complaints or compliments.
+        Shows which areas of your business customers mention most. A tall bar does not automatically mean a problem — it means that area generates the most feedback, positive or negative. Check the urgency heatmap to understand if it is good or bad attention.
       </MetricRow>
       <MetricRow label="Urgency Heatmap">
-        Cross-references your categories with urgency levels (Critical, Medium, Low). A dark red cell
-        means multiple critical issues in that category — your highest priority area. Start with the
-        darkest cell when deciding what to fix first.
+        Cross-references your categories with urgency levels. A red cell means multiple critical issues in that category — your highest priority area to fix.
       </MetricRow>
       <MetricRow label="Emotion Breakdown">
-        Shows how customers feel. Happy and satisfied customers are likely to return and refer others.
-        Angry and frustrated customers are likely to leave negative public reviews if not addressed
-        quickly. The dominant emotion tells you the severity of the situation.
+        Shows how customers feel emotionally. Happy and satisfied customers are likely to return and refer others. Angry and frustrated customers are likely to leave negative public reviews if not addressed quickly.
       </MetricRow>
       <MetricRow label="Top Negative Issues">
-        The specific areas generating the most complaints, ranked by volume and urgency. Each row
-        includes an example quote from a real review in your dataset. Start here when deciding what
-        to fix first.
+        The specific areas generating the most complaints, ranked by volume and then by critical count. Always start here when deciding what to fix first.
       </MetricRow>
       <MetricRow label="Multi-Aspect Coverage">
         Shows how many reviews mention more than one topic. A high proportion of multi-aspect reviews
@@ -174,33 +154,24 @@ function DashboardTab() {
 function ActionPlanTab() {
   return (
     <div>
-      <P>
-        The AI Action Plan is generated from your actual feedback statistics — not generic advice.
-        Every recommendation is tied to specific numbers from your data.
-      </P>
+      <P>The AI Action Plan is generated from your actual feedback statistics — not generic advice. Every recommendation is tied to specific numbers from your data.</P>
 
       <Heading>Health Score</Heading>
-      <P>
-        A composite score combining your sentiment, urgency rate, and classification confidence.
-        Think of it as your customer experience score for this batch of reviews.
-      </P>
+      <P>A composite score combining your sentiment rate, urgency rate, and classification confidence. Think of it as your overall customer experience score for this batch of reviews.</P>
       <div style={{ background: '#F9FFFE', border: '1px solid #D1EDE6', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
         <ScoreRow range="75 – 100" label="Strong">customers are largely satisfied</ScoreRow>
-        <ScoreRow range="50 – 74" label="Mixed">clear areas for improvement</ScoreRow>
+        <ScoreRow range="50 – 74" label="Mixed">clear areas needing improvement</ScoreRow>
         <ScoreRow range="25 – 49" label="Needs Attention">significant customer experience problems</ScoreRow>
-        <ScoreRow range="0 – 24" label="Critical">urgent action required</ScoreRow>
+        <ScoreRow range="0 – 24" label="Critical">urgent action required immediately</ScoreRow>
       </div>
 
       <Heading>Recommendations</Heading>
-      <P>
-        Ranked from highest to lowest impact. Each recommendation tells you what the data shows,
-        what to do about it specifically, and how difficult it is to fix relative to the impact.
-      </P>
+      <P>Ranked from highest to lowest impact. Each recommendation tells you what the data shows, exactly what to do about it, and how hard it is to fix relative to the impact it will have.</P>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
         {[
-          { label: 'Impact', desc: 'How much fixing this will improve customer satisfaction. High impact issues are worth fixing even if they take effort.' },
-          { label: 'Effort', desc: 'How much work is required. Low effort / high impact issues should always come first.' },
-          { label: 'Timeframe', desc: 'When you should act. Immediate means this week. Short Term means this month. Long Term means this quarter.' },
+          { label: 'Impact', desc: 'How much fixing this issue will improve overall customer satisfaction based on the volume and urgency of complaints.' },
+          { label: 'Effort', desc: 'How much work is required from your team. Low effort means you can act this week. High effort means it needs planning and resources.' },
+          { label: 'Timeframe', desc: 'Immediate means act this week. Short Term means act this month. Long Term means plan for this quarter.' },
         ].map(({ label, desc }) => (
           <div key={label} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
             <span style={{ flexShrink: 0, background: TEAL, color: 'white', fontWeight: 700, fontSize: '11px', padding: '3px 10px', borderRadius: '20px', marginTop: '2px' }}>
@@ -212,19 +183,10 @@ function ActionPlanTab() {
       </div>
 
       <Heading>Quick Win</Heading>
-      <P>
-        The single easiest, fastest thing you can do right now to improve customer satisfaction
-        based on your data. Always do this first — it is chosen because it has high impact and
-        low effort, meaning you get a meaningful result quickly.
-      </P>
+      <P>The single easiest, fastest thing you can do right now to improve customer satisfaction. Always do this first — it builds momentum and shows customers you are listening.</P>
 
       <Heading>Data Quality Note</Heading>
-      <P>
-        If this appears, it means some reviews were ambiguous and classified with lower confidence.
-        This happens with very short reviews, reviews in multiple languages, or reviews that cover
-        unusual topics. The overall patterns are still valid but treat individual category numbers
-        with some caution.
-      </P>
+      <P>Appears when some reviews were ambiguous and classified with lower confidence. The overall patterns are still valid but treat individual category numbers with some caution.</P>
     </div>
   );
 }
@@ -237,36 +199,37 @@ function FaqTab() {
     },
     {
       q: 'What file formats can I upload?',
-      a: 'CSV files (.csv) and Excel files (.xlsx or .xls). Make sure your file has a column containing the review text — FeedbackIQ will detect it automatically or let you choose it.',
+      a: 'CSV files (.csv) and Excel files (.xlsx or .xls). Make sure your file has a column containing the review text — FeedbackIQ detects it automatically or lets you choose it manually.',
     },
     {
       q: 'What are custom categories?',
-      a: 'When you set up your company profile you define your own feedback categories — for example Delivery Speed, Product Quality, Customer Support. FeedbackIQ classifies every review into your categories, not generic ones. This makes the analysis specific to your business.',
+      a: 'When you set up your company profile you define your own feedback categories — for example Delivery Speed, Product Quality, or Customer Support. FeedbackIQ classifies every review into your categories specifically, not generic ones. This makes the analysis relevant to your exact business.',
     },
     {
-      q: 'Why does a category show reviews even though I never mentioned that topic?',
-      a: 'FeedbackIQ includes a General Experience category automatically as a catch-all for reviews that do not clearly fit any of your defined categories.',
+      q: 'Why do some reviews appear under General Experience?',
+      a: 'FeedbackIQ adds a General Experience category automatically as a catch-all for reviews that do not clearly fit any of your defined categories.',
     },
     {
       q: 'Can I run multiple analyses?',
-      a: 'Yes. Every analysis is saved to your account history. After two or more analyses, FeedbackIQ will show you trend data — whether your sentiment is improving or declining over time.',
+      a: 'Yes. Every analysis is saved to your account history. After two or more analyses FeedbackIQ shows you trend data — whether your sentiment score is improving or declining over time.',
     },
     {
       q: 'Is my data secure?',
-      a: 'Your password is encrypted using industry-standard hashing. Your review data is stored securely and never shared with other companies or used to train AI models.',
+      a: 'Your password is encrypted using Argon2 — the same industry-standard algorithm used by major password managers. Your review data is stored securely and never shared with other companies.',
     },
     {
       q: 'Why did my action plan fail to generate?',
-      a: 'The action plan occasionally hits usage limits. Wait 60 seconds and try again. If it continues to fail, try running the analysis again with your reviews.',
+      a: 'The AI model occasionally hits usage limits. Wait 60 seconds and click Generate Action Plan again. If it keeps failing, try re-running the analysis.',
     },
     {
       q: 'What is the difference between Urgency and Sentiment?',
-      a: 'Sentiment is about whether a review is positive or negative overall. Urgency is about how serious the problem is. A review can be negative but low urgency (mild dissatisfaction) or negative and critical urgency (angry, serious complaint requiring immediate action).',
+      a: 'Sentiment is whether a review is positive or negative overall. Urgency is how serious the problem is. A review can be negative but low urgency — mild dissatisfaction — or negative and critical urgency — an angry complaint needing immediate action.',
     },
   ];
 
   return (
     <div>
+      <P>Answers to the most common questions about how FeedbackIQ works.</P>
       {items.map(({ q, a }) => (
         <QA key={q} q={q}>{a}</QA>
       ))}
@@ -325,8 +288,13 @@ export default function DocsModal({ onClose }: DocsModalProps) {
           </button>
         </div>
 
-        {/* Tabs — horizontal on md+, scrollable on mobile */}
-        <div className="flex border-b border-gray-100 flex-shrink-0 overflow-x-auto"
+        {/* Tabs — horizontal on sm+, stacked on mobile */}
+        <style>{`
+          @media (min-width: 640px) {
+            .docs-tab-list { flex-direction: row; }
+          }
+        `}</style>
+        <div className="docs-tab-list flex flex-col border-b border-gray-100 flex-shrink-0"
              style={{ padding: '0 32px' }}>
           {TABS.map((tab) => {
             const active = activeTab === tab.id;

@@ -67,7 +67,29 @@ GENERIC_PHRASES = [
     "going forward",
     "at the end of the day",
     "moving forward",
+    "enhance overall",
+    "improve overall",
+    "various measures",
+    "take steps to",
+    "work towards",
+    "focus on improving",
 ]
+
+# Concrete action verbs that signal a specific, doable quick win.
+_QUICK_WIN_VERBS = [
+    "implement", "send", "add", "create", "set up",
+    "enable", "switch", "replace",
+]
+
+# Generic words stripped from customer examples before they become
+# category-relevance anchors — they would match almost any text.
+_GROUNDING_STOPWORDS = {
+    "with", "that", "this", "have", "were", "was", "your", "you",
+    "they", "them", "from", "when", "what", "which", "would", "could",
+    "should", "work", "working", "very", "just", "more", "some", "been",
+    "their", "there", "about", "into", "over", "than", "then", "only",
+    "also", "such", "does", "did", "not", "but", "and", "the", "for",
+}
 
 
 # ─── Health score computation (Python only — never delegate to LLM) ───────────
@@ -400,6 +422,92 @@ def validate_action_plan(raw_response: str) -> dict:
     return {"success": True, "result": result, "error": None}
 
 
+# ─── Grounding verification (pure Python, zero LLM calls) ─────────────────────
+
+def _verify_grounding(result_dict: dict, dashboard_data: dict) -> tuple:
+    """
+    Quality gate run after Pydantic validation. Verifies a generated action plan
+    is actually grounded in the data rather than generic filler. Pure string and
+    number checking — zero LLM calls, microsecond cost.
+
+    Returns (passed: bool, reason: str). On the first failing check it returns
+    (False, <specific reason>); if every check passes it returns (True, "passed").
+    """
+    recommendations = result_dict.get("recommendations", []) or []
+    quick_win = result_dict.get("quick_win", {}) or {}
+
+    # 1. Number grounding — grounded rationales cite counts or percentages.
+    rationales_with_numbers = sum(
+        1 for r in recommendations
+        if re.search(r"\d", r.get("rationale", ""))
+    )
+    if rationales_with_numbers < 3:
+        return (
+            False,
+            f"Only {rationales_with_numbers} recommendation rationale(s) cite a "
+            f"number; at least 3 must reference specific counts or percentages "
+            f"from the data.",
+        )
+
+    # 2. Generic phrase check across all rationale + action text combined.
+    combined_text = " ".join(
+        (r.get("rationale", "") + " " + r.get("action", ""))
+        for r in recommendations
+    ).lower()
+    generic_count = sum(
+        1 for phrase in GENERIC_PHRASES if phrase in combined_text
+    )
+    if generic_count >= 3:
+        return (
+            False,
+            f"Found {generic_count} generic phrases across the recommendations; "
+            f"rewrite with specific, concrete language instead of business filler.",
+        )
+
+    # 3. Category relevance — recommendations must stay anchored to the real
+    #    issues instead of drifting into generic advice. Anchor terms come from
+    #    the actual top-issue category names and customer examples.
+    top_issues = dashboard_data.get("top_issues", []) or []
+    relevant_terms = set()
+    for issue in top_issues:
+        category = str(issue.get("category", "")).lower()
+        for word in re.findall(r"[a-z]+", category):
+            if len(word) > 3:
+                relevant_terms.add(word)
+        example = str(issue.get("example", "")).lower()
+        for word in re.findall(r"[a-z]+", example):
+            if len(word) > 3 and word not in _GROUNDING_STOPWORDS:
+                relevant_terms.add(word)
+
+    if relevant_terms and recommendations:
+        matched = 0
+        for r in recommendations:
+            text = (r.get("title", "") + " " + r.get("action", "")).lower()
+            if any(term in text for term in relevant_terms):
+                matched += 1
+        if matched < len(recommendations) / 2.0:
+            return (
+                False,
+                f"Only {matched} of {len(recommendations)} recommendations "
+                f"reference the actual issue categories; they drifted away from "
+                f"the real customer feedback.",
+            )
+
+    # 4. Quick win specificity — must cite a number or a concrete action verb.
+    qw_desc = str(quick_win.get("description", "")).lower()
+    has_number = bool(re.search(r"\d", qw_desc))
+    has_verb = any(verb in qw_desc for verb in _QUICK_WIN_VERBS)
+    if not (has_number or has_verb):
+        return (
+            False,
+            "Quick win description is vague; it must cite a number or a concrete "
+            "action (implement, send, add, create, set up, enable, switch, "
+            "replace).",
+        )
+
+    return (True, "passed")
+
+
 # ─── Main entry point ─────────────────────────────────────────────────────────
 
 def generate_action_plan(dashboard_data: dict, profile: dict) -> dict:
@@ -442,13 +550,21 @@ def generate_action_plan(dashboard_data: dict, profile: dict) -> dict:
             current_user_prompt = user_prompt
 
             if attempt > 0 and last_error:
-                retry_prefix = (
-                    f"RETRY ATTEMPT {attempt}. Previous attempt failed because: {last_error}\n\n"
-                    f"Critical reminder: Output ONLY valid JSON after the </thinking> tag. "
-                    f"No markdown. No code fences. The JSON must be complete — do not truncate it. "
-                    f"If you are running long, write shorter recommendation actions but complete "
-                    f"the full JSON structure.\n\n"
-                )
+                if last_error.startswith("GROUNDING: "):
+                    reason = last_error[len("GROUNDING: "):]
+                    retry_prefix = (
+                        f"PREVIOUS ATTEMPT REJECTED: {reason} You must cite specific "
+                        f"numbers from the data in each rationale and reference the actual "
+                        f"issue categories. Do not use generic business language.\n\n"
+                    )
+                else:
+                    retry_prefix = (
+                        f"RETRY ATTEMPT {attempt}. Previous attempt failed because: {last_error}\n\n"
+                        f"Critical reminder: Output ONLY valid JSON after the </thinking> tag. "
+                        f"No markdown. No code fences. The JSON must be complete — do not truncate it. "
+                        f"If you are running long, write shorter recommendation actions but complete "
+                        f"the full JSON structure.\n\n"
+                    )
                 current_user_prompt = f"{retry_prefix}{user_prompt}"
 
             try:
@@ -467,10 +583,39 @@ def generate_action_plan(dashboard_data: dict, profile: dict) -> dict:
                 validation = validate_action_plan(raw)
 
                 if validation["success"]:
-                    result_obj = validation["result"]
+                    result_dict = validation["result"].model_dump()
+
+                    # Grounding verification — another reason a retry can fire,
+                    # within the existing retry budget. Zero extra LLM calls
+                    # unless it forces a retry.
+                    grounded, ground_reason = _verify_grounding(
+                        result_dict, dashboard_data)
+
+                    if grounded:
+                        return {
+                            "success": True,
+                            "result": result_dict,
+                            "health_score": health_score,
+                            "health_label": health_label,
+                            "provider": provider,
+                            "error": None,
+                        }
+
+                    if attempt < MAX_RETRIES:
+                        last_error = f"GROUNDING: {ground_reason}"
+                        logger.info(
+                            f"Grounding check failed on attempt {attempt + 1}, "
+                            f"retrying: {ground_reason}")
+                        continue
+
+                    # No retries left — a mediocre plan beats no plan, but flag
+                    # it so we can monitor quality.
+                    logger.warning(
+                        f"Action plan did not pass grounding verification after "
+                        f"all retries: {ground_reason}")
                     return {
                         "success": True,
-                        "result": result_obj.model_dump(),
+                        "result": result_dict,
                         "health_score": health_score,
                         "health_label": health_label,
                         "provider": provider,

@@ -273,7 +273,7 @@ JSON SCHEMA:
 {{
   "health_score": <integer 0-100, pre-computed — copy from DATA SNAPSHOT exactly>,
   "health_label": <"Strong" | "Mixed" | "Needs Attention" | "Critical", pre-computed — copy from DATA SNAPSHOT exactly>,
-  "executive_summary": <string, exactly 2 sentences, must cite at least 2 numbers from the data>,
+  "executive_summary": <string, exactly 2 sentences, must cite at least 2 numbers from the data. When citing issue numbers in the executive summary, always distinguish between total negative reviews and critical-urgency reviews. Use the format 'X negative reviews, Y of them critical' rather than conflating the two numbers. For example: '5 negative delivery reviews, 3 of them critical' — never just '3 reviews citing delivery' when the negative count is actually higher. Always lead with the total negative count for an issue, then note how many are critical if any.>,
   "key_strengths": [<string, one sentence each citing a specific number> ...],
   "recommendations": [
     {{

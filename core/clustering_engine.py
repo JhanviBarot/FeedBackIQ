@@ -17,7 +17,7 @@ Design guarantees:
   ``{"available": False, "error": <message>}``.
 """
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 import numpy as np
 import pandas as pd
@@ -42,25 +42,38 @@ def _critical_mask(category_df: pd.DataFrame) -> pd.Series:
 
 def _row_to_unique(row: pd.Series) -> dict:
     return {
-        "id": row["ID"],
-        "review": row["Review"],
-        "sentiment": row["Sentiment"],
+        "quote": row["Review"],
+        "review_id": row["ID"],
         "urgency": row["Urgency"],
-        "critical": str(row["Urgency"]).lower() == "critical",
+        "sentiment": row["Sentiment"],
     }
 
 
-def _representative_position(positions: list, embeddings: np.ndarray) -> int:
-    """Row position of the member closest to the cluster's mean embedding."""
-    member_vecs = embeddings[positions]
-    centroid = member_vecs.mean(axis=0)
-    # Cosine similarity to centroid; pick the highest (closest).
+def _dominant_sentiment(sentiments: list) -> str:
+    """Most common sentiment among a cluster's members."""
+    if not sentiments:
+        return "neutral"
+    return Counter(s for s in sentiments).most_common(1)[0][0]
+
+
+def _representative_position(positions: list, embeddings: np.ndarray,
+                             candidates: list = None) -> int:
+    """Row position of the member closest to the cluster's mean embedding.
+
+    The centroid is always computed over the whole cluster, but the chosen
+    representative is restricted to ``candidates`` when given — so the theme
+    quote we surface matches the cluster's dominant sentiment rather than an
+    off-tone outlier.
+    """
+    centroid = embeddings[positions].mean(axis=0)
+    cand = candidates if candidates else positions
+    cand_vecs = embeddings[cand]
     centroid_norm = np.linalg.norm(centroid)
-    member_norms = np.linalg.norm(member_vecs, axis=1)
-    denom = member_norms * centroid_norm
+    cand_norms = np.linalg.norm(cand_vecs, axis=1)
+    denom = cand_norms * centroid_norm
     denom[denom == 0] = 1e-12
-    sims = member_vecs @ centroid / denom
-    return positions[int(np.argmax(sims))]
+    sims = cand_vecs @ centroid / denom
+    return cand[int(np.argmax(sims))]
 
 
 def _cluster_single_category(category: str, category_df: pd.DataFrame) -> dict:
@@ -105,27 +118,29 @@ def _cluster_single_category(category: str, category_df: pd.DataFrame) -> dict:
         if len(positions) < MIN_CLUSTER_SIZE:
             unique.extend(_row_to_unique(r) for _, r in rows.iterrows())
             continue
-        members = [
-            {"id": r["ID"], "review": r["Review"], "urgency": r["Urgency"]}
-            for _, r in rows.iterrows()
+        # Representative review = the one closest to the cluster centroid, drawn
+        # from the dominant-sentiment members so the quote matches the dot.
+        sentiments = rows["Sentiment"].astype(str).tolist()
+        dominant = _dominant_sentiment(sentiments)
+        dominant_positions = [
+            p for p, s in zip(positions, sentiments) if s == dominant
         ]
-        rep_pos = _representative_position(positions, embeddings)
+        rep_pos = _representative_position(positions, embeddings, dominant_positions)
         rep_row = category_df.iloc[rep_pos]
         clusters.append(
             {
-                "label": label,
-                "size": len(members),
+                "theme_quote": rep_row["Review"],
+                "count": len(positions),
+                "dominant_sentiment": dominant,
+                "review_ids": [r["ID"] for _, r in rows.iterrows()],
+                # Internal-only: drives critical-first ordering, not part of the
+                # public contract.
                 "critical_count": int(_critical_mask(rows).sum()),
-                "representative": {
-                    "id": rep_row["ID"],
-                    "review": rep_row["Review"],
-                },
-                "members": members,
             }
         )
 
-    # Sort clusters: most critical first, then largest.
-    clusters.sort(key=lambda c: (c["critical_count"], c["size"]), reverse=True)
+    # Sort clusters by count descending, breaking ties toward more critical.
+    clusters.sort(key=lambda c: (c["count"], c["critical_count"]), reverse=True)
 
     return {
         "category": category,
@@ -142,8 +157,20 @@ def cluster_reviews_by_category(results_df: pd.DataFrame) -> dict:
 
         {
             "available": True,
-            "categories": [ {category, total, clusters, unique}, ... ],
             "total_reviews": int,
+            "categories": {
+                <category name>: {
+                    "total": int,
+                    "clusters": [
+                        {theme_quote, count, dominant_sentiment, review_ids},
+                        ...
+                    ],
+                    "unique": [
+                        {quote, review_id, urgency, sentiment}, ...
+                    ],
+                },
+                ...
+            },
         }
 
     On any failure (including too few reviews to bother)::
@@ -172,12 +199,12 @@ def cluster_reviews_by_category(results_df: pd.DataFrame) -> dict:
                 ),
             }
 
-        categories = []
+        categories = {}
         for category, category_df in results_df.groupby("Primary Category"):
             result = _cluster_single_category(str(category), category_df)
 
             # Reconciliation guard: clusters + unique must equal the total.
-            clustered = sum(c["size"] for c in result["clusters"])
+            clustered = sum(c["count"] for c in result["clusters"])
             accounted = clustered + len(result["unique"])
             if accounted != result["total"]:
                 return {
@@ -188,7 +215,11 @@ def cluster_reviews_by_category(results_df: pd.DataFrame) -> dict:
                     ),
                 }
 
-            categories.append(result)
+            categories[str(category)] = {
+                "total": result["total"],
+                "clusters": result["clusters"],
+                "unique": result["unique"],
+            }
 
         # Critical-safety guard: every critical review in the input must be
         # present somewhere in the output (clustered or unique).
@@ -196,10 +227,10 @@ def cluster_reviews_by_category(results_df: pd.DataFrame) -> dict:
             results_df.loc[_critical_mask(results_df), "ID"].tolist()
         )
         output_ids = set()
-        for cat in categories:
+        for cat in categories.values():
             for cluster in cat["clusters"]:
-                output_ids.update(m["id"] for m in cluster["members"])
-            output_ids.update(u["id"] for u in cat["unique"])
+                output_ids.update(cluster["review_ids"])
+            output_ids.update(u["review_id"] for u in cat["unique"])
         dropped_critical = input_critical_ids - output_ids
         if dropped_critical:
             return {

@@ -11,7 +11,9 @@ import {
 import AppLayout from '../components/AppLayout';
 import api from '../api/client';
 import { getTrendContext, getBenchmarks } from '../api/dashboard';
+import { getClusters } from '../api/clusters';
 import type { TrendResponse, BenchmarkResponse } from '../api/dashboard';
+import type { ClustersResponse } from '../api/clusters';
 import type { DashboardResponse, ActionPlanResponse } from '../types/api';
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
@@ -45,6 +47,11 @@ const EFFORT_COLORS: Record<string, string> = {
   medium: 'bg-amber-100 text-amber-700',
   high: 'bg-red-100 text-red-700',
 };
+const SENTIMENT_DOT: Record<string, string> = {
+  positive: 'bg-green-500',
+  negative: 'bg-red-500',
+  neutral: 'bg-gray-400',
+};
 const TIMEFRAME_LABELS: Record<string, string> = {
   immediate: 'Immediate',
   short_term: 'Short-term',
@@ -73,6 +80,9 @@ export default function ResultsPage() {
 
   const [benchmarkData, setBenchmarkData] = useState<BenchmarkResponse | null>(null);
   const [benchmarkLoading, setBenchmarkLoading] = useState(true);
+
+  const [clusterData, setClusterData] = useState<ClustersResponse | null>(null);
+  const [clusterLoading, setClusterLoading] = useState(true);
 
   // ── Data fetch ───────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -104,6 +114,16 @@ export default function ResultsPage() {
       .catch(() => setBenchmarkData({ available: false }))
       .finally(() => setBenchmarkLoading(false));
   }, [sessionId]);
+
+  // Theme clustering — fired after the main dashboard data loads, in its own
+  // request so it never blocks the core results rendering.
+  useEffect(() => {
+    if (!sessionId || !dashData) return;
+    getClusters(sessionId)
+      .then(setClusterData)
+      .catch(() => setClusterData({ available: false }))
+      .finally(() => setClusterLoading(false));
+  }, [sessionId, dashData]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
   const handleGenerateActionPlan = async () => {
@@ -223,6 +243,12 @@ export default function ResultsPage() {
   const formatDate = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
   const scoreColor = (s: number) => s >= 70 ? '#27AE60' : s >= 50 ? '#F59E0B' : '#C0392B';
+
+  // Only categories that produced at least one theme are worth showing; a
+  // category that is entirely unique reviews would just add clutter.
+  const themedCategories = clusterData?.available && clusterData.categories
+    ? Object.entries(clusterData.categories).filter(([, c]) => c.clusters.length > 0)
+    : [];
 
   return (
     <AppLayout>
@@ -435,6 +461,58 @@ export default function ResultsPage() {
             </Card>
           </div>
         )}
+
+        {/* SECTION 5.5 — Theme Breakdown (within-category clustering) */}
+        {clusterLoading ? (
+          <Card>
+            <Skeleton className="h-6 w-44 mb-3" />
+            <Skeleton className="h-4 w-full max-w-xl mb-6" />
+            <div className="space-y-3">
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-20 w-full" />
+            </div>
+          </Card>
+        ) : themedCategories.length > 0 ? (
+          <Card>
+            <SectionTitle>Theme Breakdown</SectionTitle>
+            <p className="text-sm text-muted -mt-3 mb-6 max-w-3xl">
+              Specific patterns found within your feedback. A single category often
+              contains several distinct themes — these add up to your category totals.
+            </p>
+            <div className="space-y-5">
+              {themedCategories.map(([name, cat]) => (
+                <div key={name} className="border border-gray-100 rounded-xl p-5">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-4">
+                    {name}
+                    <span className="text-muted font-normal">
+                      {' '}— {cat.total} review{cat.total === 1 ? '' : 's'}
+                    </span>
+                  </h3>
+                  <div className="space-y-3">
+                    {cat.clusters.map((cl, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <span
+                          className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${SENTIMENT_DOT[cl.dominant_sentiment] ?? 'bg-gray-400'}`}
+                        />
+                        <span className="text-sm font-bold text-gray-900 w-6 text-center flex-shrink-0">
+                          {cl.count}
+                        </span>
+                        <span className="text-sm text-gray-500 italic line-clamp-1">
+                          “{cl.theme_quote}”
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  {cat.unique.length > 0 && (
+                    <p className="text-xs text-muted mt-4">
+                      + {cat.unique.length} individual comment{cat.unique.length === 1 ? '' : 's'}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Card>
+        ) : null}
 
         {/* SECTION 6 — AI Action Plan */}
         <Card>

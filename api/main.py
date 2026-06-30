@@ -18,6 +18,7 @@ from api.routes.auth import router as auth_router
 from api.routes.sessions import router as sessions_router
 from api.routes.analyse import router as analyse_router
 from api.routes.dashboard import router as dashboard_router
+from api.routes.clusters import router as clusters_router
 from api.routes.action_plan import router as action_plan_router
 from api.routes.report import router as report_router
 from api.routes.export import router as export_router
@@ -110,6 +111,7 @@ def create_app() -> FastAPI:
     app.include_router(sessions_router)
     app.include_router(analyse_router)
     app.include_router(dashboard_router)
+    app.include_router(clusters_router)
     app.include_router(action_plan_router)
     app.include_router(report_router)
     app.include_router(export_router)
@@ -125,7 +127,7 @@ def create_app() -> FastAPI:
             timestamp=datetime.now(timezone.utc).isoformat(),
             modules=[
                 "auth", "sessions", "analyse", "dashboard",
-                "action_plan", "report", "export", "trends",
+                "clusters", "action_plan", "report", "export", "trends",
                 "benchmarks", "webhooks", "rag",
             ],
         )

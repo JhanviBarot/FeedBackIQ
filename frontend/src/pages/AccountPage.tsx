@@ -14,12 +14,9 @@ import type { WebhookConfig, TestWebhookResult } from '../api/webhooks';
 const INDUSTRIES = [
   { value: 'E-commerce',  label: 'E-commerce' },
   { value: 'SaaS',        label: 'SaaS / Software' },
-  { value: 'Retail',      label: 'Retail' },
   { value: 'Hospitality', label: 'Hospitality & Restaurants' },
-  { value: 'Healthcare',  label: 'Healthcare' },
+  { value: 'Retail',      label: 'Retail' },
   { value: 'Logistics',   label: 'Logistics & Delivery' },
-  { value: 'Finance',     label: 'Finance & Banking' },
-  { value: 'Education',   label: 'Education' },
   { value: 'Other',       label: 'Other' },
 ];
 

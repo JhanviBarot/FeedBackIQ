@@ -58,10 +58,14 @@ export default function LandingPage() {
                   </svg>
                 </span>
               </h1>
-              <p className="text-xl text-gray-600 mb-10 leading-relaxed">
+              <p className="text-xl text-gray-600 mb-6 leading-relaxed">
                 FeedbackIQ analyzes thousands of reviews in minutes, not months.
                 Get sentiment analysis, identify critical issues, and generate
                 actionable recommendations automatically.
+              </p>
+              <p className="text-sm text-muted mb-10 leading-relaxed">
+                Built for E-commerce, SaaS, Hospitality, Retail, and Logistics —
+                with tailored AI recommendations for each.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                 <Link

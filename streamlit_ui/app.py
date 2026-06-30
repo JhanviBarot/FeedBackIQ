@@ -31,12 +31,9 @@ from api.storage.users import UserStore
 INDUSTRIES = [
     "E-commerce",
     "SaaS",
-    "Retail",
     "Hospitality",
-    "Healthcare",
+    "Retail",
     "Logistics",
-    "Finance",
-    "Education",
     "Other",
 ]
 
